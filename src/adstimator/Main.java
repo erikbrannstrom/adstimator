@@ -1,3 +1,5 @@
+package adstimator;
+
 
 import adstimator.gui.GUI;
 

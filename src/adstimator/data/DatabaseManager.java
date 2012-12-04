@@ -29,13 +29,60 @@ public class DatabaseManager implements DataManager
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	public Ads get()
 	{
-		String whereClause = "";
+		return this.get("Body, Image_Hash, Clicks_Count, Impressions", "");
+	}
 
+	private Ads get(String select, String groupBy)
+	{
+		String whereClause = this.createWhereClause();
+		
+		if (groupBy != null && groupBy.length() > 0) {
+			groupBy = "GROUP BY " + groupBy;
+		} else {
+			groupBy = "";
+		}
+
+		try {
+			DatabaseLoader loader = new DatabaseLoader();
+			loader.connectToDatabase();
+			loader.setQuery(String.format("SELECT %s FROM %s %s %s", select, this.tableName, whereClause, groupBy));
+			if (loader.getDataSet() == null) {
+				loader.reset();
+				return null;
+			} else {
+				Ads ads = new Ads(loader.getDataSet());
+				loader.reset();
+				return ads;
+			}
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+	
+	public Ads getAggregate(String attribute)
+	{
+		return this.get(attribute + ", AVG(Clicks_Count) AS Clicks_Count, AVG(Impressions) AS Impressions", attribute);
+	}
+
+	public void where(String key, String value)
+	{
+		this.where.add(key);
+		this.where.add(value);
+	}
+
+	public void resetWhere()
+	{
+		this.where = new LinkedList<String>();
+	}
+	
+	private String createWhereClause()
+	{
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("WHERE Impressions > 0");
+		
 		if (this.where.size() != 0) {
 			boolean key = true;
 			buffer.append(" AND ");
@@ -53,35 +100,10 @@ public class DatabaseManager implements DataManager
 				}
 				key = !key;
 			}
-			whereClause = buffer.substring(0, buffer.length()-5);
+			return buffer.substring(0, buffer.length()-5);
 		}
-
-		try {
-			DatabaseLoader loader = new DatabaseLoader();
-			loader.connectToDatabase();
-			loader.setQuery(String.format("SELECT Body, Image_Hash, Clicks_Count, Impressions FROM %s %s", this.tableName, whereClause));
-			if (loader.getDataSet() == null) {
-				loader.reset();
-				return null;
-			} else {
-				Ads ads = new Ads(loader.getDataSet());
-				loader.reset();
-				return ads;
-			}
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
-	}
-
-	public void where(String key, String value)
-	{
-		this.where.add(key);
-		this.where.add(value);
-	}
-
-	public void resetWhere()
-	{
-		this.where = new LinkedList<String>();
+		
+		return buffer.toString();
 	}
 
 }

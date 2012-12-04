@@ -2,7 +2,6 @@ package adstimator.data;
 
 import adstimator.data.Ads;
 
-
 public interface DataManager
 {
 	public void add(Ads ads);

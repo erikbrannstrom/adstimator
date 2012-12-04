@@ -1,14 +1,14 @@
 package adstimator.gui;
 
-import adstimator.core.CombinationAdFactory;
-import adstimator.data.DataManager;
-import adstimator.data.DatabaseManager;
-import adstimator.io.FacebookDataParser;
-import adstimator.io.Exporter;
 import adstimator.core.AdFactory;
+import adstimator.core.CombinationAdFactory;
 import adstimator.core.Estimator;
 import adstimator.data.Ads;
+import adstimator.data.DataManager;
+import adstimator.data.DatabaseManager;
 import adstimator.gui.models.AdsTableModel;
+import adstimator.io.Exporter;
+import adstimator.io.FacebookDataParser;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.*;
@@ -24,7 +24,7 @@ import weka.core.converters.DatabaseLoader;
 public class GUI extends JFrame
 {
 	private AdsTableModel tableModel;
-	private DataManager dataManager;
+	private DatabaseManager dataManager;
 	private AdFactory adFactory;
 
 	// GUI components
@@ -168,18 +168,8 @@ public class GUI extends JFrame
 		JButton btnSubmit = new JButton("Show suggestions");
 		btnSubmit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				GUI.this.updateWhere();
 				try {
-					dataManager.resetWhere();
-
-					String val = (String)cmbGender.getSelectedItem();
-					if (!val.equalsIgnoreCase("All")) {
-						dataManager.where("Gender", val);
-					}
-					val = (String)cmbAge.getSelectedItem();
-					if (!val.equalsIgnoreCase("All")) {
-						dataManager.where("Age_Min", val.substring(0, val.indexOf("-")));
-					}
-
 					Estimator est = Estimator.factory(dataManager.get(), "weka.classifiers.functions.Logistic", Arrays.asList("-R", "1000").toArray(new String[0]));
 					adFactory = new CombinationAdFactory(dataManager);
 					Instances ads = adFactory.all();
@@ -195,7 +185,30 @@ public class GUI extends JFrame
 				}
 			}
 		});
+		
 		pnlTarget.add(btnSubmit);
+		JButton btnTexts = new JButton("Show texts");
+		btnTexts.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				GUI.this.updateWhere();
+				
+				Ads knowledge = dataManager.getAggregate("Body");
+				knowledge.convertToRate();
+				tableModel.setData(null, knowledge);
+			}
+		});
+		pnlTarget.add(btnTexts);
+		JButton btnImages = new JButton("Show images");
+		btnImages.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				GUI.this.updateWhere();
+				
+				Ads knowledge = dataManager.getAggregate("Image_Hash");
+				knowledge.convertToRate();
+				tableModel.setData(null, knowledge);
+			}
+		});
+		pnlTarget.add(btnImages);
 		this.add(pnlTarget, "wrap");
 
 		// Table
@@ -245,6 +258,21 @@ public class GUI extends JFrame
 		
 		// Pack frame
 		this.pack();
+	}
+	
+	private void updateWhere()
+	{
+		this.dataManager.resetWhere();
+
+		String val = (String)cmbGender.getSelectedItem();
+		if (!val.equalsIgnoreCase("All")) {
+			this.dataManager.where("Gender", val);
+		}
+		val = (String)cmbAge.getSelectedItem();
+		if (!val.equalsIgnoreCase("All")) {
+			this.dataManager.where("Age_Min", val.substring(0, val.indexOf("-")));
+			this.dataManager.where("Age_Max", val.substring(val.indexOf("-")+1));
+		}
 	}
 
 	private void updateFilter()

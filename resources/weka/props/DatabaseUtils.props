@@ -9,7 +9,7 @@
 jdbcDriver=org.sqlite.JDBC
 
 # database URL
-jdbcURL=jdbc:sqlite:data/data.db
+jdbcURL=jdbc:sqlite:resources/data.db
 
 # specific data types
 # string, getString() = 0;    --> nominal
