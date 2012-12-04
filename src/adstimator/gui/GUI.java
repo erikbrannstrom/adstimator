@@ -4,7 +4,6 @@ import adstimator.core.AdFactory;
 import adstimator.core.CombinationAdFactory;
 import adstimator.core.Estimator;
 import adstimator.data.Ads;
-import adstimator.data.DataManager;
 import adstimator.data.DatabaseManager;
 import adstimator.gui.models.AdsTableModel;
 import adstimator.io.Exporter;
@@ -53,18 +52,19 @@ public class GUI extends JFrame
 		// Menu bar
 		JMenuBar menuBar = new JMenuBar();
 		JMenu menuFile = new JMenu("File");
-		JMenuItem menuItmReport = new JMenuItem("Add report");
+		JMenuItem menuItmReport = new JMenuItem("Import report");
 		menuItmReport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
 				chooser.setFileFilter(new FileNameExtensionFilter("CSV", "csv"));
-				int returnVal = chooser.showOpenDialog(null);
+				int returnVal = chooser.showOpenDialog(GUI.this);
 				if(returnVal == JFileChooser.APPROVE_OPTION) {
 					dataManager.add(new Ads(FacebookDataParser.parse(chooser.getSelectedFile())));
+					GUI.this.updateTargetControls();
 				}
 			}
 		});
-		menuItmReport.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
+		menuItmReport.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
 			Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		menuFile.add(menuItmReport);
 
@@ -129,48 +129,26 @@ public class GUI extends JFrame
 		menuBar.add(menuFile);
 		this.setJMenuBar(menuBar);
 
-		// Target
-		DatabaseLoader loader = null;
-		Instances inst = null;
-		try {
-			loader = new DatabaseLoader();
-			loader.connectToDatabase();
-			loader.setQuery("SELECT Gender, Age_Min, Age_Max FROM instances");
-			inst = loader.getDataSet();
-			loader.reset();
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
-
+		// Targeting
 		JPanel pnlTarget = new JPanel(new MigLayout("ins 5"));
 		pnlTarget.add(new JLabel("Target:"));
-		List<String> genders = new LinkedList<String>();
-		if (inst != null) {
-			for (int i = 0; i < inst.attribute("Gender").numValues(); i++) {
-				genders.add(inst.attribute("Gender").value(i));
-			}
-		}
-		genders.add("All");
-		cmbGender = new JComboBox(genders.toArray(new String[0]));
+
+		cmbGender = new JComboBox();
 		pnlTarget.add(cmbGender);
 
-		Set<String> ages = new TreeSet<String>();
-		if (inst != null) {
-			Attribute attMinAge = inst.attribute("Age_Min");
-			Attribute attMaxAge = inst.attribute("Age_Max");
-			for (Instance instance : inst) {
-				ages.add(instance.value(attMinAge) + "-" + instance.value(attMaxAge));
-			}
-		}
-		ages.add("All");
-		cmbAge = new JComboBox(ages.toArray(new String[0]));
+		cmbAge = new JComboBox();
 		pnlTarget.add(cmbAge);
+		
+		this.updateTargetControls();
+		
+		// Buttons for choosing what the data table should show (suggestions, texts or images)
 		JButton btnSubmit = new JButton("Show suggestions");
 		btnSubmit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				GUI.this.updateWhere();
 				try {
-					Estimator est = Estimator.factory(dataManager.get(), "weka.classifiers.functions.Logistic", Arrays.asList("-R", "1000").toArray(new String[0]));
+					Estimator est = Estimator.factory(dataManager.get(), "weka.classifiers.functions.Logistic", 
+							Arrays.asList("-R", "1000").toArray(new String[0]));
 					adFactory = new CombinationAdFactory(dataManager);
 					Instances ads = adFactory.all();
 					ads.setClassIndex(ads.numAttributes()-1);
@@ -240,7 +218,7 @@ public class GUI extends JFrame
 
 		pnlFilter.add(this.cmbFilterType, "gap 0 5, align left");
 		this.filterText = new JTextField();
-		//Whenever filterText changes, invoke newFilter.
+		// Whenever filterText changes, update the filter on the table.
 		this.filterText.getDocument().addDocumentListener(
 			new DocumentListener() {
 				public void changedUpdate(DocumentEvent e) {
@@ -260,14 +238,61 @@ public class GUI extends JFrame
 		this.pack();
 	}
 	
+	private void updateTargetControls()
+	{
+		Instances inst = null;
+		try {
+			DatabaseLoader loader = new DatabaseLoader();
+			loader.connectToDatabase();
+			loader.setQuery("SELECT Gender, Age_Min, Age_Max FROM instances");
+			inst = loader.getDataSet();
+			loader.reset();
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+		
+		List<String> genders = new LinkedList<String>();
+		if (inst != null) {
+			for (int i = 0; i < inst.attribute("Gender").numValues(); i++) {
+				genders.add(inst.attribute("Gender").value(i));
+			}
+		}
+		genders.add("All");
+		this.cmbGender.removeAllItems();
+		for (String gender : genders) {
+			this.cmbGender.addItem(gender);
+		}
+		
+		Set<String> ages = new TreeSet<String>();
+		if (inst != null) {
+			Attribute attMinAge = inst.attribute("Age_Min");
+			Attribute attMaxAge = inst.attribute("Age_Max");
+			for (Instance instance : inst) {
+				ages.add(instance.value(attMinAge) + "-" + instance.value(attMaxAge));
+			}
+		}
+		ages.add("All");
+		this.cmbAge.removeAllItems();
+		for (String age : ages) {
+			this.cmbAge.addItem(age);
+		}
+	}
+	
+	/**
+	 * Private method which should be called whenever the targeting options are changed.
+	 */
 	private void updateWhere()
 	{
+		// Reset where clauses
 		this.dataManager.resetWhere();
 
+		// Set gender, if other than all is selected
 		String val = (String)cmbGender.getSelectedItem();
 		if (!val.equalsIgnoreCase("All")) {
 			this.dataManager.where("Gender", val);
 		}
+		
+		// Set ages, if other than all is selected
 		val = (String)cmbAge.getSelectedItem();
 		if (!val.equalsIgnoreCase("All")) {
 			this.dataManager.where("Age_Min", val.substring(0, val.indexOf("-")));
@@ -275,6 +300,9 @@ public class GUI extends JFrame
 		}
 	}
 
+	/**
+	 * Private method which should be called whenever any of the filter options are updated.
+	 */
 	private void updateFilter()
 	{
 		// Set type filter
@@ -282,6 +310,8 @@ public class GUI extends JFrame
 			public boolean include(Entry<? extends AdsTableModel, ? extends Integer> entry) {
 				AdsTableModel model = entry.getModel();
 				int row = entry.getIdentifier();
+				
+				// Should the type of ad (suggestion, existing or all) be shown?
 				String selection = (String)cmbFilterType.getSelectedItem();
 				boolean showType = true;
 				if (selection.equals("Suggestions")) {
@@ -289,19 +319,24 @@ public class GUI extends JFrame
 				} else if (selection.equals("Existing")) {
 					showType = !model.isEstimated(row);
 				}
+				
+				// If the type matches, perform string matching to reach final decision
 				if (showType) {
 					for (int i = 0; i < model.getColumnCount(); i++) {
 						String cellValue = (String)model.getValueAt(row, i);
 						if (cellValue.indexOf(GUI.this.filterText.getText()) > -1) {
+							// String exists in at least one cell, so the row should be shown
 							return true;
 						}
 					}
 				}
+				
+				// Either the row is of the wrong type, or the text could not be found in any cell
 				return false;
 			}
 		};
 
-		// Add filter
+		// Apply filter
 		sorter.setRowFilter(typeFilter);
 	}
 
