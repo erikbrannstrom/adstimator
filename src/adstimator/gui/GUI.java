@@ -8,6 +8,8 @@ import adstimator.data.DatabaseManager;
 import adstimator.gui.models.AdsTableModel;
 import adstimator.io.Exporter;
 import adstimator.io.FacebookDataParser;
+import adstimator.utils.Config;
+import adstimator.utils.KnowledgeBase;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.*;
@@ -22,6 +24,9 @@ import weka.core.converters.DatabaseLoader;
 
 public class GUI extends JFrame
 {
+	private Config config;
+	private String currentKb;
+	
 	private AdsTableModel tableModel;
 	private DatabaseManager dataManager;
 	private AdFactory adFactory;
@@ -32,6 +37,7 @@ public class GUI extends JFrame
 	private JComboBox cmbAge;
 	private JComboBox cmbFilterType;
 	private JTextField filterText;
+	private JMenu menuDatabase;
 
 	private TableRowSorter<AdsTableModel> sorter;
 
@@ -46,8 +52,13 @@ public class GUI extends JFrame
 		JPanel panel = new JPanel(new MigLayout("fill", "", "[]10:10:10[grow]10:10:10[]"));
 		panel.setOpaque(true);
 		this.setContentPane(panel);
-
-		this.dataManager = new DatabaseManager("instances");
+		
+		cmbGender = new JComboBox();
+		cmbAge = new JComboBox();
+		
+		this.config = new Config();
+		
+		this.setCurrentKB(Integer.parseInt(this.config.get("knowledge_base")));
 
 		// Menu bar
 		JMenuBar menuBar = new JMenuBar();
@@ -125,18 +136,20 @@ public class GUI extends JFrame
 			}
 		});
 		menuFile.add(quit);
+		
+		menuDatabase = new JMenu("Knowledge bases");
+		this.updateKBMenu();
 
 		menuBar.add(menuFile);
+		menuBar.add(menuDatabase);
 		this.setJMenuBar(menuBar);
 
-		// Targeting
+		///////////////
+		// Targeting //
+		///////////////
 		JPanel pnlTarget = new JPanel(new MigLayout("ins 5"));
 		pnlTarget.add(new JLabel("Target:"));
-
-		cmbGender = new JComboBox();
 		pnlTarget.add(cmbGender);
-
-		cmbAge = new JComboBox();
 		pnlTarget.add(cmbAge);
 		
 		this.updateTargetControls();
@@ -238,13 +251,17 @@ public class GUI extends JFrame
 		this.pack();
 	}
 	
+	/**
+	 * Private method which should be called when a new report has been imported in order to repopulate the targeting 
+	 * options.
+	 */
 	private void updateTargetControls()
 	{
 		Instances inst = null;
 		try {
 			DatabaseLoader loader = new DatabaseLoader();
 			loader.connectToDatabase();
-			loader.setQuery("SELECT Gender, Age_Min, Age_Max FROM instances");
+			loader.setQuery("SELECT Gender, Age_Min, Age_Max FROM " + this.currentKb);
 			inst = loader.getDataSet();
 			loader.reset();
 		} catch (Exception ex) {
@@ -338,6 +355,54 @@ public class GUI extends JFrame
 
 		// Apply filter
 		sorter.setRowFilter(typeFilter);
+	}
+
+	private void updateKBMenu()
+	{
+		this.menuDatabase.removeAll();
+		
+		JMenuItem menuItmNew = new JMenuItem("New KB");
+		menuItmNew.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae)
+			{
+				String name = JOptionPane.showInputDialog(GUI.this, "Name the new knowledge base:");
+				if (name != null && name.length() > 0) {
+					KnowledgeBase kb = new KnowledgeBase(name);
+					kb.save();
+					GUI.this.updateKBMenu();
+				}
+			}
+		});
+		this.menuDatabase.add(menuItmNew);
+		this.menuDatabase.addSeparator();
+		
+		ButtonGroup group = new ButtonGroup();
+		int activeKB = Integer.parseInt(this.config.get("knowledge_base"));
+		for (final KnowledgeBase kb : KnowledgeBase.getAll()) {
+			JRadioButtonMenuItem itm = new JRadioButtonMenuItem(kb.name(), kb.id() == activeKB);
+			itm.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent ae)
+				{
+					GUI.this.setCurrentKB(kb.id());
+				}
+			});
+			group.add(itm);
+			this.menuDatabase.add(itm);
+		}
+	}
+	
+	private void setCurrentKB(int id)
+	{
+		if (this.currentKb != null && this.currentKb.equals("kb" + id)) {
+			return;
+		}
+		
+		GUI.this.config.set("knowledge_base", String.valueOf(id));
+		this.currentKb = "kb" + id;
+		this.dataManager = new DatabaseManager(this.currentKb);
+		this.updateTargetControls();
 	}
 
 }

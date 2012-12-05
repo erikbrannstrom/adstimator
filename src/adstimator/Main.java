@@ -1,6 +1,5 @@
 package adstimator;
 
-
 import adstimator.gui.GUI;
 
 /**
@@ -10,9 +9,14 @@ import adstimator.gui.GUI;
  */
 public class Main {
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
+		if (Setup.isFirstRun()) {
+			System.out.println("First time application starts. Run initilization.");
+			Setup.init();
+		}
+		
 		GUI frame = new GUI();
-		// Show frame
+		frame.setSize(900, 600);
 		frame.setVisible(true);
 	}
 	

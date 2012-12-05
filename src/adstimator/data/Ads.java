@@ -1,14 +1,37 @@
 package adstimator.data;
 
-import weka.core.*;
 import java.util.*;
+import weka.core.*;
 
+/**
+ * Class for representing a set of ad campaigns.
+ * 
+ * The class is an extension of Weka's Instances class with a few additions that are specific to ads and their metrics.
+ * For example, an instance of ads can be converted from the standard metrics of clicks and impressions to the actual
+ * click rate (i.e. clicks divided by impressions).
+ * 
+ * @author erikbrannstrom
+ */
 public class Ads extends Instances
 {
+	/**
+	 * List of target properties.
+	 */
 	public static final List<String> TARGETS = Arrays.asList("Gender", "Age Min", "Age Max");
+	/**
+	 * List of ad properties.
+	 */
 	public static final List<String> AD = Arrays.asList("Body", "Image Hash");
+	/**
+	 * List of metrics.
+	 */
 	public static final List<String> METRICS = Arrays.asList("Clicks Count", "Impressions", "Click Rate");
 
+	/**
+	 * Create a new set of ads from instances.
+	 * 
+	 * @param inst 
+	 */
 	public Ads(Instances inst)
 	{
 		super(inst);
@@ -26,6 +49,15 @@ public class Ads extends Instances
 		}
 	}
 
+	/**
+	 * Find an instance matching another instance.
+	 * 
+	 * An instance is considered to be a match if they have the same ad properties, and ignores targeting and metrics.
+	 * Only the first match is returned.
+	 * 
+	 * @param original
+	 * @return First matching ad, null if no match could be found
+	 */
 	public Instance findMatch(Instance original)
 	{
 		for (Instance test : this) {
@@ -46,6 +78,10 @@ public class Ads extends Instances
 		return null;
 	}
 
+	/**
+	 * Convert the whole set of instances to the click rate format by calculating the rate and then removing the old
+	 * attributes.
+	 */
 	public void convertToRate()
 	{
 		if (this.attribute("Click Rate") != null) {
@@ -76,6 +112,11 @@ public class Ads extends Instances
 		this.deleteAttributeAt(actions.index());
 	}
 
+	/**
+	 * Get the average action rate of the whole data set.
+	 * 
+	 * @return Average action rate
+	 */
 	public double averageActionRate()
 	{
 		Attribute ar = this.attribute("Click Rate");
