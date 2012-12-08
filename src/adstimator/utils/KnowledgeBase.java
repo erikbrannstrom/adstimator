@@ -9,6 +9,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -39,6 +40,11 @@ public class KnowledgeBase
 	{
 		this.name = name;
 		this.saved(false);
+	}
+	
+	public String table()
+	{
+		return "kb" + this.id();
 	}
 
 	public KnowledgeBase(int id, String name)
@@ -84,6 +90,22 @@ public class KnowledgeBase
 		}
 	}
 	
+	public static KnowledgeBase find(int id)
+	{
+		try {
+			Connection con = getConnection();
+			PreparedStatement find = con.prepareStatement("SELECT id, name FROM knowledge_bases WHERE id = ?");
+			find.setInt(1, id);
+			ResultSet rs = find.executeQuery();
+			KnowledgeBase kb = new KnowledgeBase(rs.getInt("id"), rs.getString("name"));
+			kb.saved(true);
+			con.close();
+			return kb;
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+	
 	public void save()
 	{
 		try {
@@ -104,7 +126,30 @@ public class KnowledgeBase
 			this.saved(true);
 			con.close();
 		} catch (SQLException ex) {
-			
+			throw new RuntimeException(ex);
+		}
+	}
+	
+	public void delete()
+	{
+		if (!this.exists) {
+			return;
+		}
+		
+		try {
+			Connection con = KnowledgeBase.getConnection();
+			PreparedStatement delete = con.prepareStatement("DELETE FROM knowledge_bases WHERE id = ?");
+			delete.setInt(1, this.id());
+			delete.executeUpdate();
+			delete.close();
+			Statement drop = con.createStatement();
+			drop.execute(String.format("DROP TABLE IF EXISTS %s", this.table()));
+			drop.close();
+			con.close();
+			this.saved(false);
+			this.exists(false);
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
 		}
 	}
 	

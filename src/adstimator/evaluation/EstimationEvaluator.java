@@ -1,15 +1,6 @@
 package adstimator.evaluation;
 
 import weka.core.*;
-import java.util.*;
-import weka.classifiers.Evaluation;
-import weka.classifiers.Classifier;
-import weka.core.converters.ConverterUtils.DataSource;
-import weka.classifiers.functions.SMOreg;
-import weka.classifiers.functions.Logistic;
-import cern.jet.random.Normal;
-import cern.jet.random.Uniform;
-import cern.jet.random.engine.MersenneTwister;
 
 public class EstimationEvaluator
 {
