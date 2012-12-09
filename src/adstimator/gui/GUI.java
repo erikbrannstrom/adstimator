@@ -6,15 +6,12 @@ import adstimator.core.Estimator;
 import adstimator.data.Ads;
 import adstimator.data.DatabaseManager;
 import adstimator.gui.models.AdsTableModel;
+import adstimator.gui.views.AdsTable;
 import adstimator.io.Exporter;
 import adstimator.io.FacebookDataParser;
 import adstimator.utils.Config;
 import adstimator.utils.KnowledgeBase;
-import java.awt.Color;
-import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
@@ -34,7 +31,7 @@ public class GUI extends JFrame
 	private DatabaseManager dataManager;
 	private AdFactory adFactory;
 	// GUI components
-	private JTable table;
+	private AdsTable table;
 	private JComboBox cmbGender;
 	private JComboBox cmbAge;
 	private JComboBox cmbFilterType;
@@ -89,40 +86,27 @@ public class GUI extends JFrame
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				// Get selected rows
-				int[] selection = table.getSelectedRows();
-				for (int i = 0; i < selection.length; i++) {
-					selection[i] = table.convertRowIndexToModel(selection[i]);
-				}
-				if (selection.length == 0) {
-					JOptionPane.showMessageDialog(GUI.this, "No rows selected.");
-					return;
-				}
+				Map<String, String> target = new HashMap<String, String>();
 				// Ask for campaign name
 				String campaignName = JOptionPane.showInputDialog(GUI.this, "What is the name of the campaign?");
-				// Create list with a map for each ad
-				List<Map<String, String>> adList = new LinkedList<Map<String, String>>();
-				for (int row : selection) {
-					Map<String, String> adMap = new HashMap<String, String>();
-					if (campaignName != null) {
-						adMap.put("Campaign Name", campaignName);
-					}
-					adMap.put("Body", tableModel.getValueAt(row, tableModel.findColumn("Body")).toString());
-					adMap.put("Image Hash", tableModel.getValueAt(row, tableModel.findColumn("Image_Hash")).toString());
-					String val = (String) cmbGender.getSelectedItem();
-					if (val.equalsIgnoreCase("All")) {
-						val = "";
-					}
-					adMap.put("Gender", val);
-					val = (String) cmbAge.getSelectedItem();
-					if (!val.equalsIgnoreCase("All")) {
-						adMap.put("Age Min", val.substring(0, val.indexOf("-")));
-						adMap.put("Age Max", val.substring(val.indexOf("-") + 1));
-					}
-					adList.add(adMap);
+				target.put("Campaign Name", campaignName);
+				String val = (String) cmbGender.getSelectedItem();
+				if (val.equalsIgnoreCase("All")) {
+					val = "";
+				}
+				target.put("Gender", val);
+				val = (String) cmbAge.getSelectedItem();
+				if (!val.equalsIgnoreCase("All")) {
+					target.put("Age Min", val.substring(0, val.indexOf("-")));
+					target.put("Age Max", val.substring(val.indexOf("-") + 1));
+				}
+				
+				List<Map<String, String>> adList = GUI.this.table.exportSelectedRows(target);
+				if (adList == null) {
+					JOptionPane.showMessageDialog(GUI.this, "No rows selected.");
 				}
 				// Perform export
-				Exporter exp = new Exporter("data/export-template.csv");
+				Exporter exp = new Exporter("resources/export-template.csv");
 				JFileChooser chooser = new JFileChooser();
 				chooser.setFileFilter(new FileNameExtensionFilter("CSV", "csv"));
 				int returnVal = chooser.showSaveDialog(null);
@@ -217,7 +201,7 @@ public class GUI extends JFrame
 
 				Ads knowledge = dataManager.getAggregate("Image_Hash");
 				knowledge.convertToRate();
-				
+
 				GUI.this.storeSortKeys(false);
 				tableModel.setData(null, knowledge);
 				GUI.this.sorter.setSortKeys(GUI.this.getSortKeys(false));
@@ -228,67 +212,11 @@ public class GUI extends JFrame
 
 		// Table
 		this.sorter = new TableRowSorter<AdsTableModel>(this.tableModel);
-		table = new JTable(this.tableModel)
-		{
-			public TableCellRenderer getCellRenderer(int row, int column)
-			{
-				if (!GUI.this.tableModel.isEstimated(this.convertRowIndexToModel(row))) {
-					DefaultTableCellRenderer cr = new DefaultTableCellRenderer();
-					cr.setBackground(new Color(100, 100, 100, 20));
-					return cr;
-				} else {
-					DefaultTableCellRenderer cr = new DefaultTableCellRenderer();
-					cr.setBackground(new Color(240, 190, 110, 80));
-					return cr;
-				}
-			}
-		};
-		table.setRowSorter(this.sorter);
+		this.table = new AdsTable(this.tableModel);
+		this.table.setRowSorter(this.sorter);
 
-		table.addMouseListener(new MouseAdapter()
-		{
-			@Override
-			public void mousePressed(MouseEvent e)
-			{
-				int r = table.rowAtPoint(e.getPoint());
-				if (r >= 0 && r < table.getRowCount()) {
-					table.setRowSelectionInterval(r, r);
-				} else {
-					table.clearSelection();
-				}
 
-				int rowindex = table.getSelectedRow();
-				if (rowindex < 0) {
-					return;
-				}
-				if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
-					JPopupMenu popup = createYourPopUp(e.getPoint());
-					popup.show(e.getComponent(), e.getX(), e.getY());
-				}
-			}
 
-			private JPopupMenu createYourPopUp(final Point p)
-			{
-				JPopupMenu menu = new JPopupMenu();
-				JMenuItem itm = new JMenuItem("Copy cell value");
-				itm.addActionListener(new ActionListener() {
-
-					@Override
-					public void actionPerformed(ActionEvent ae)
-					{
-						int row = GUI.this.table.rowAtPoint(p);
-						int column = GUI.this.table.columnAtPoint(p);
-						
-						Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
-						StringSelection data = new StringSelection(GUI.this.table.getValueAt(row, column).toString());
-						c.setContents(data, data);
-					}
-				});
-				menu.add(itm);
-				return menu;
-			}
-		});
-		
 		JScrollPane scrollPane = new JScrollPane(table);
 		this.add(scrollPane, "grow 100 100, wrap");
 
@@ -386,13 +314,13 @@ public class GUI extends JFrame
 				this.lastSortRank = this.table.getRowSorter().getSortKeys();
 			}
 		}
-		
+
 		this.fullLastActive = fullTable;
 	}
-	
+
 	private List<? extends RowSorter.SortKey> getSortKeys(boolean fullTable)
 	{
-		if ( (fullTable && this.lastSortFull == null) || (!fullTable && this.lastSortRank == null) ) {
+		if ((fullTable && this.lastSortFull == null) || (!fullTable && this.lastSortRank == null)) {
 			// Default sort keys are returned if we have no previous sorting
 			return Arrays.asList(new RowSorter.SortKey(tableModel.getColumnCount() - 1, SortOrder.DESCENDING));
 		} else if (fullTable) {
@@ -487,15 +415,15 @@ public class GUI extends JFrame
 			}
 		});
 		this.menuDatabase.add(menuItmNew);
-		
+
 		JMenuItem menuItmDelete = new JMenuItem("Delete current KB");
 		menuItmDelete.addActionListener(new ActionListener()
 		{
 			@Override
 			public void actionPerformed(ActionEvent ae)
 			{
-				int answer = JOptionPane.showConfirmDialog(GUI.this, 
-						String.format("Are you sure you want to delete the knowledge base %s?", GUI.this.currentKb.name()), 
+				int answer = JOptionPane.showConfirmDialog(GUI.this,
+						String.format("Are you sure you want to delete the knowledge base %s?", GUI.this.currentKb.name()),
 						"Confirm delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 				if (answer == JOptionPane.YES_OPTION) {
 					List<KnowledgeBase> kbs = KnowledgeBase.getAll();
@@ -512,7 +440,7 @@ public class GUI extends JFrame
 			}
 		});
 		this.menuDatabase.add(menuItmDelete);
-		
+
 		this.menuDatabase.addSeparator();
 
 		ButtonGroup group = new ButtonGroup();
@@ -532,13 +460,13 @@ public class GUI extends JFrame
 			this.menuDatabase.add(itm);
 		}
 	}
-	
+
 	private void setCurrentKB(KnowledgeBase kb)
 	{
 		if (this.currentKb != null && this.currentKb.id() == kb.id()) {
 			return;
 		}
-		
+
 		GUI.this.config.set("knowledge_base", String.valueOf(kb.id()));
 		this.currentKb = kb;
 		this.dataManager = new DatabaseManager(kb.table());
