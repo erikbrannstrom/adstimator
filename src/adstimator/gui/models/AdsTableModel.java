@@ -20,6 +20,7 @@ public class AdsTableModel extends javax.swing.table.AbstractTableModel
 		this.fireTableStructureChanged();
 	}
 
+	@Override
 	public int getRowCount()
 	{
 		if (this.estimatedAds == null && this.existingAds == null) {
@@ -32,6 +33,7 @@ public class AdsTableModel extends javax.swing.table.AbstractTableModel
 		return this.estimatedAds.numInstances() + this.existingAds.numInstances();
 	}
 
+	@Override
 	public int getColumnCount()
 	{
 		if (this.estimatedAds == null && this.existingAds == null) {
@@ -42,6 +44,7 @@ public class AdsTableModel extends javax.swing.table.AbstractTableModel
 		return this.existingAds.numAttributes();
 	}
 
+	@Override
 	public String getColumnName(int col) {
 		if (this.estimatedAds == null && this.existingAds == null) {
 			return "";
@@ -51,6 +54,7 @@ public class AdsTableModel extends javax.swing.table.AbstractTableModel
 		return this.existingAds.attribute(col).name();
 	}
 
+	@Override
 	public Object getValueAt(int row, int column)
 	{
 		if (this.estimatedAds == null && this.existingAds == null) {

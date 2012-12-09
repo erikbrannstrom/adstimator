@@ -17,7 +17,6 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.*;
 import net.miginfocom.swing.MigLayout;
 import weka.core.*;
 import weka.core.converters.DatabaseLoader;
@@ -37,9 +36,6 @@ public class GUI extends JFrame
 	private JComboBox cmbFilterType;
 	private JTextField filterText;
 	private JMenu menuDatabase;
-	private TableRowSorter<AdsTableModel> sorter;
-	private List<? extends RowSorter.SortKey> lastSortFull, lastSortRank;
-	private boolean fullLastActive;
 
 	public GUI()
 	{
@@ -167,9 +163,7 @@ public class GUI extends JFrame
 					Ads knowledge = dataManager.get();
 					knowledge.convertToRate();
 
-					GUI.this.storeSortKeys(true);
 					tableModel.setData(new Ads(ads), knowledge);
-					GUI.this.sorter.setSortKeys(GUI.this.getSortKeys(true));
 				} catch (Exception ex) {
 					throw new RuntimeException(ex);
 				}
@@ -186,9 +180,7 @@ public class GUI extends JFrame
 
 				Ads knowledge = dataManager.getAggregate("Body");
 				knowledge.convertToRate();
-				GUI.this.storeSortKeys(false);
 				tableModel.setData(null, knowledge);
-				GUI.this.sorter.setSortKeys(GUI.this.getSortKeys(false));
 			}
 		});
 		pnlTarget.add(btnTexts);
@@ -202,20 +194,14 @@ public class GUI extends JFrame
 				Ads knowledge = dataManager.getAggregate("Image_Hash");
 				knowledge.convertToRate();
 
-				GUI.this.storeSortKeys(false);
 				tableModel.setData(null, knowledge);
-				GUI.this.sorter.setSortKeys(GUI.this.getSortKeys(false));
 			}
 		});
 		pnlTarget.add(btnImages);
 		this.add(pnlTarget, "wrap");
 
 		// Table
-		this.sorter = new TableRowSorter<AdsTableModel>(this.tableModel);
 		this.table = new AdsTable(this.tableModel);
-		this.table.setRowSorter(this.sorter);
-
-
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		this.add(scrollPane, "grow 100 100, wrap");
@@ -304,34 +290,6 @@ public class GUI extends JFrame
 		}
 	}
 
-	private void storeSortKeys(boolean fullTable)
-	{
-		// Only store sorting if there is data to be sorted
-		if (this.tableModel.getColumnCount() > 0) {
-			if (this.fullLastActive) {
-				this.lastSortFull = this.table.getRowSorter().getSortKeys();
-			} else {
-				this.lastSortRank = this.table.getRowSorter().getSortKeys();
-			}
-		}
-
-		this.fullLastActive = fullTable;
-	}
-
-	private List<? extends RowSorter.SortKey> getSortKeys(boolean fullTable)
-	{
-		if ((fullTable && this.lastSortFull == null) || (!fullTable && this.lastSortRank == null)) {
-			// Default sort keys are returned if we have no previous sorting
-			return Arrays.asList(new RowSorter.SortKey(tableModel.getColumnCount() - 1, SortOrder.DESCENDING));
-		} else if (fullTable) {
-			// Last used sorting for full table
-			return this.lastSortFull;
-		} else {
-			// Last used sorting for rank table
-			return this.lastSortRank;
-		}
-	}
-
 	/**
 	 * Private method which should be called whenever the targeting options are changed.
 	 */
@@ -393,7 +351,7 @@ public class GUI extends JFrame
 		};
 
 		// Apply filter
-		this.sorter.setRowFilter(typeFilter);
+		this.table.setRowFilter(typeFilter);
 	}
 
 	private void updateKBMenu()

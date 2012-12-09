@@ -15,16 +15,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.DefaultRowSorter;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableRowSorter;
 
 /**
  *
@@ -32,16 +39,52 @@ import javax.swing.table.TableCellRenderer;
  */
 public class AdsTable extends JTable
 {
-
 	private AdsTableModel model;
+	private DefaultRowSorter<AdsTableModel, Integer> sorter;
+	private Map<Integer, List<? extends RowSorter.SortKey>> sortKeyMap;
 
 	public AdsTable(AdsTableModel model)
 	{
 		super(model);
 		this.initContextMenu();
 		this.model = model;
+		this.sortKeyMap = new HashMap<Integer, List<? extends RowSorter.SortKey>>();
+		this.sorter = new TableRowSorter<AdsTableModel>(this.model);
+		this.setRowSorter(this.sorter);
 	}
 
+	@Override
+	public void tableChanged(TableModelEvent tme)
+	{
+		// If not row sorter is set, we are done.
+		if (this.getRowSorter() == null) {
+			super.tableChanged(tme);
+			return;
+		}
+		
+		int prevNumColumns = this.getColumnCount();
+		List<? extends RowSorter.SortKey> sorter = this.getRowSorter().getSortKeys();
+		super.tableChanged(tme);
+		int currentNumColumns = this.getColumnCount();
+		// If number of columns have changed we should switch sorter
+		// Else we assume the same sorter should be used
+		if (prevNumColumns != currentNumColumns) {
+			this.sortKeyMap.put(prevNumColumns, sorter);
+			if (this.sortKeyMap.containsKey(currentNumColumns)) {
+				sorter = this.sortKeyMap.get(currentNumColumns);
+			} else {
+				sorter = Arrays.asList(new RowSorter.SortKey(this.model.getColumnCount() - 1, SortOrder.DESCENDING));
+			}
+			
+		}
+		this.getRowSorter().setSortKeys(sorter);
+	}
+
+	public void setRowFilter(RowFilter<? super AdsTableModel, ? super Integer> rf)
+	{
+		sorter.setRowFilter(rf);
+	}
+	
 	public List<Map<String, String>> exportSelectedRows(Map<String, String> fixedValues)
 	{
 		// Get selected rows
