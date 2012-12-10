@@ -63,6 +63,7 @@ public class DatabaseManager implements DataManager
 	
 	public Ads getAggregate(String attribute)
 	{
+		attribute = attribute.replaceAll(" ", "_");
 		return this.get(attribute + ", AVG(Clicks_Count) AS Clicks_Count, AVG(Impressions) AS Impressions", attribute);
 	}
 	
@@ -84,10 +85,10 @@ public class DatabaseManager implements DataManager
 	
 	private String createWhereClause()
 	{
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		buffer.append("WHERE Impressions > 0");
 		
-		if (this.where.size() != 0) {
+		if (!this.where.isEmpty()) {
 			boolean key = true;
 			buffer.append(" AND ");
 			for (String item : where) {

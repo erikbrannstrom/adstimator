@@ -4,7 +4,6 @@
  */
 package adstimator.data;
 
-import adstimator.io.FacebookDataParser;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -118,6 +117,26 @@ public class KnowledgeBase
 		ageList.addAll(ages);
 		
 		return map;
+	}
+	
+	public Ads getAds(Map<String, String> target)
+	{
+		this.databaseManager().resetWhere();
+		for (String key : target.keySet()) {
+			this.databaseManager().where(key, target.get(key));
+		}
+		Ads ads = this.databaseManager().get();
+		return ads;
+	}
+	
+	public Ads getAggregatedAds(Map<String, String> target, String aggregate)
+	{
+		this.databaseManager().resetWhere();
+		for (String key : target.keySet()) {
+			this.databaseManager().where(key, target.get(key));
+		}
+		Ads ads = this.databaseManager().getAggregate(aggregate);
+		return ads;
 	}
 	
 	public void addAds(Ads ads)
