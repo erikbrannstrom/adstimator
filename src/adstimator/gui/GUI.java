@@ -5,21 +5,20 @@ import adstimator.core.CombinationAdFactory;
 import adstimator.core.Estimator;
 import adstimator.data.Ads;
 import adstimator.data.DatabaseManager;
+import adstimator.data.KnowledgeBase;
 import adstimator.gui.models.AdsTableModel;
 import adstimator.gui.views.AdsTable;
+import adstimator.gui.views.FilterPanel;
 import adstimator.io.Exporter;
 import adstimator.io.FacebookDataParser;
 import adstimator.utils.Config;
-import adstimator.data.KnowledgeBase;
 import java.awt.Toolkit;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import net.miginfocom.swing.MigLayout;
 import weka.core.*;
-import weka.core.converters.DatabaseLoader;
 
 public class GUI extends JFrame
 {
@@ -207,40 +206,7 @@ public class GUI extends JFrame
 		this.add(scrollPane, "grow 100 100, wrap");
 
 		// Filtering
-		JPanel pnlFilter = new JPanel(new MigLayout("fillx, ins 5"));
-		pnlFilter.add(new JLabel("Filters:"), "gap 0 5, align left");
-		this.cmbFilterType = new JComboBox(Arrays.asList("All", "Existing", "Suggestions").toArray(new String[0]));
-		cmbFilterType.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent e)
-			{
-				GUI.this.updateFilter();
-			}
-		});
-
-		pnlFilter.add(this.cmbFilterType, "gap 0 5, align left");
-		this.filterText = new JTextField();
-		// Whenever filterText changes, update the filter on the table.
-		this.filterText.getDocument().addDocumentListener(
-				new DocumentListener()
-				{
-					public void changedUpdate(DocumentEvent e)
-					{
-						GUI.this.updateFilter();
-					}
-
-					public void insertUpdate(DocumentEvent e)
-					{
-						GUI.this.updateFilter();
-					}
-
-					public void removeUpdate(DocumentEvent e)
-					{
-						GUI.this.updateFilter();
-					}
-				});
-		pnlFilter.add(this.filterText, "align left, pushx 100, growx 100, gap 0 0");
-		this.add(pnlFilter, "growx");
+		this.add(new FilterPanel(this.table), "growx");
 
 		// Pack frame
 		this.pack();
@@ -284,48 +250,6 @@ public class GUI extends JFrame
 			this.dataManager.where("Age_Min", val.substring(0, val.indexOf("-")));
 			this.dataManager.where("Age_Max", val.substring(val.indexOf("-") + 1));
 		}
-	}
-
-	/**
-	 * Private method which should be called whenever any of the filter options are updated.
-	 */
-	private void updateFilter()
-	{
-		// Set type filter
-		RowFilter<AdsTableModel, Integer> typeFilter = new RowFilter<AdsTableModel, Integer>()
-		{
-			public boolean include(Entry<? extends AdsTableModel, ? extends Integer> entry)
-			{
-				AdsTableModel model = entry.getModel();
-				int row = entry.getIdentifier();
-
-				// Should the type of ad (suggestion, existing or all) be shown?
-				String selection = (String) cmbFilterType.getSelectedItem();
-				boolean showType = true;
-				if (selection.equals("Suggestions")) {
-					showType = model.isEstimated(row);
-				} else if (selection.equals("Existing")) {
-					showType = !model.isEstimated(row);
-				}
-
-				// If the type matches, perform string matching to reach final decision
-				if (showType) {
-					for (int i = 0; i < model.getColumnCount(); i++) {
-						String cellValue = (String) model.getValueAt(row, i);
-						if (cellValue.toLowerCase().indexOf(GUI.this.filterText.getText().toLowerCase()) > -1) {
-							// String exists in at least one cell, so the row should be shown
-							return true;
-						}
-					}
-				}
-
-				// Either the row is of the wrong type, or the text could not be found in any cell
-				return false;
-			}
-		};
-
-		// Apply filter
-		this.table.setRowFilter(typeFilter);
 	}
 
 	private void updateKBMenu()
