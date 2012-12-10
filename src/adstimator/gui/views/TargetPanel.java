@@ -33,7 +33,7 @@ public class TargetPanel extends JPanel implements Observer
 	{
 		Map<String, String> currentTarget = new HashMap<String, String>();
 		// Set gender, if other than all is selected
-		String val = (String) this.cmbAge.getSelectedItem();
+		String val = (String) this.cmbGender.getSelectedItem();
 		if (!val.equalsIgnoreCase("All")) {
 			currentTarget.put("Gender", val);
 		}

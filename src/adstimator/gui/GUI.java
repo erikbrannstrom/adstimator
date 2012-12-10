@@ -22,10 +22,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import net.miginfocom.swing.MigLayout;
 import weka.core.*;
 
-public class GUI extends JFrame
+public class GUI extends JFrame implements Observer
 {
 	private Config config;
-	private KnowledgeBase currentKb;
 	private AdsTableModel tableModel;
 	private DatabaseManager dataManager;
 	private AdFactory adFactory;
@@ -48,9 +47,11 @@ public class GUI extends JFrame
 		this.setContentPane(panel);
 
 		this.config = new Config();
-
-		this.setCurrentKB(Integer.parseInt(this.config.get("knowledge_base")));
+		
+		this.kbContainer = new KnowledgeBaseContainer(Integer.parseInt(this.config.get("knowledge_base")));
 		this.targetPanel = new TargetPanel(this.kbContainer);
+		this.kbContainer.addObserver(this);
+		this.update(this.kbContainer, null);
 
 		// Menu bar
 		JMenuBar menuBar = new JMenuBar();
@@ -124,7 +125,7 @@ public class GUI extends JFrame
 		// Targeting //
 		///////////////
 		JPanel pnlTarget = new JPanel(new MigLayout("ins 5"));
-		pnlTarget.add(new TargetPanel(this.kbContainer));
+		pnlTarget.add(this.targetPanel);
 
 		// Buttons for choosing what the data table should show (suggestions, texts or images)
 		JButton btnSubmit = new JButton("Show suggestions");
@@ -237,14 +238,14 @@ public class GUI extends JFrame
 			public void actionPerformed(ActionEvent ae)
 			{
 				int answer = JOptionPane.showConfirmDialog(GUI.this,
-						String.format("Are you sure you want to delete the knowledge base %s?", GUI.this.currentKb.name()),
+						String.format("Are you sure you want to delete the knowledge base %s?", GUI.this.kbContainer.getKnowledgeBase().name()),
 						"Confirm delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 				if (answer == JOptionPane.YES_OPTION) {
 					List<KnowledgeBase> kbs = KnowledgeBase.getAll();
 					if (kbs.size() > 1) {
-						GUI.this.currentKb.delete();
+						GUI.this.kbContainer.getKnowledgeBase().delete();
 						kbs = KnowledgeBase.getAll();
-						GUI.this.setCurrentKB(kbs.get(0));
+						GUI.this.kbContainer.setKnowledgeBase(kbs.get(0));
 						GUI.this.updateKBMenu();
 						GUI.this.tableModel.setData(null, null);
 					} else {
@@ -266,7 +267,7 @@ public class GUI extends JFrame
 				@Override
 				public void actionPerformed(ActionEvent ae)
 				{
-					GUI.this.setCurrentKB(kb);
+					GUI.this.kbContainer.setKnowledgeBase(kb);
 					GUI.this.tableModel.setData(null, null);
 				}
 			});
@@ -275,24 +276,11 @@ public class GUI extends JFrame
 		}
 	}
 
-	private void setCurrentKB(KnowledgeBase kb)
+	@Override
+	public void update(Observable o, Object o1)
 	{
-		if (this.currentKb != null && this.currentKb.id() == kb.id()) {
-			return;
-		}
-
-		GUI.this.config.set("knowledge_base", String.valueOf(kb.id()));
-		this.currentKb = kb;
-		this.dataManager = new DatabaseManager(kb.table());
-		if (this.kbContainer == null) {
-			this.kbContainer = new KnowledgeBaseContainer(kb);
-		} else {
-			this.kbContainer.setKnowledgeBase(this.currentKb);
-		}
+		GUI.this.config.set("knowledge_base", String.valueOf(this.kbContainer.getKnowledgeBase().id()));
+		this.dataManager = new DatabaseManager(this.kbContainer.getKnowledgeBase().table());
 	}
-
-	private void setCurrentKB(int id)
-	{
-		this.setCurrentKB(KnowledgeBase.find(id));
-	}
+	
 }
