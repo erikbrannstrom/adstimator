@@ -1,6 +1,5 @@
 package adstimator.data;
 
-import adstimator.data.Ads;
 import java.util.*;
 import weka.core.converters.DatabaseLoader;
 import weka.core.converters.DatabaseSaver;
@@ -65,6 +64,11 @@ public class DatabaseManager implements DataManager
 	public Ads getAggregate(String attribute)
 	{
 		return this.get(attribute + ", AVG(Clicks_Count) AS Clicks_Count, AVG(Impressions) AS Impressions", attribute);
+	}
+	
+	public Ads getTargets()
+	{
+		return this.get("Gender, Age_Min, Age_Max", "");
 	}
 
 	public void where(String key, String value)

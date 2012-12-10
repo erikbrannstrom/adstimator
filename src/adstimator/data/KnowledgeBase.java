@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package adstimator.utils;
+package adstimator.data;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,10 +10,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import weka.core.Attribute;
+import weka.core.Instance;
 import weka.experiment.DatabaseUtils;
 
 /**
@@ -25,6 +29,7 @@ public class KnowledgeBase
 	private boolean exists, saved;
 	private int id;
 	private String name;
+	private DatabaseManager manager;
 	
 	public int id()
 	{
@@ -51,6 +56,7 @@ public class KnowledgeBase
 	{
 		this.id = id;
 		this.name = name;
+		this.manager = new DatabaseManager(this.table());
 	}
 	
 	public KnowledgeBase(String name)
@@ -69,6 +75,31 @@ public class KnowledgeBase
 		if (saved) {
 			this.exists(true);
 		}
+	}
+	
+	public Map<String, List<String>> targets()
+	{
+		Map<String, List<String>> map = new HashMap<String, List<String>>();
+		Ads targets = this.manager.getTargets();
+		
+		List<String> genders = new LinkedList<String>();
+		for (int i = 0; i < targets.attribute("Gender").numValues(); i++) {
+			genders.add(targets.attribute("Gender").value(i));
+		}
+		genders.add("All");
+		map.put("Gender", genders);
+
+		Set<String> ages = new TreeSet<String>();
+		Attribute attMinAge = targets.attribute("Age_Min");
+		Attribute attMaxAge = targets.attribute("Age_Max");
+		for (Instance instance : targets) {
+			ages.add(instance.value(attMinAge) + "-" + instance.value(attMaxAge));
+		}
+		List<String> ageList = new LinkedList<String>(ages);
+		ageList.add("All");
+		map.put("Age", ageList);
+		
+		return map;
 	}
 
 	public static List<KnowledgeBase> getAll()

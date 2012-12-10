@@ -10,7 +10,7 @@ import adstimator.gui.views.AdsTable;
 import adstimator.io.Exporter;
 import adstimator.io.FacebookDataParser;
 import adstimator.utils.Config;
-import adstimator.utils.KnowledgeBase;
+import adstimator.data.KnowledgeBase;
 import java.awt.Toolkit;
 import java.awt.event.*;
 import java.util.*;
@@ -252,40 +252,14 @@ public class GUI extends JFrame
 	 */
 	private void updateTargetControls()
 	{
-		Instances inst = null;
-		try {
-			DatabaseLoader loader = new DatabaseLoader();
-			loader.connectToDatabase();
-			loader.setQuery("SELECT Gender, Age_Min, Age_Max FROM " + this.currentKb.table());
-			inst = loader.getDataSet();
-			loader.reset();
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
-
-		List<String> genders = new LinkedList<String>();
-		if (inst != null) {
-			for (int i = 0; i < inst.attribute("Gender").numValues(); i++) {
-				genders.add(inst.attribute("Gender").value(i));
-			}
-		}
-		genders.add("All");
+		Map<String, List<String>> targets = this.currentKb.targets();
 		this.cmbGender.removeAllItems();
-		for (String gender : genders) {
+		for (String gender : targets.get("Gender")) {
 			this.cmbGender.addItem(gender);
 		}
-
-		Set<String> ages = new TreeSet<String>();
-		if (inst != null) {
-			Attribute attMinAge = inst.attribute("Age_Min");
-			Attribute attMaxAge = inst.attribute("Age_Max");
-			for (Instance instance : inst) {
-				ages.add(instance.value(attMinAge) + "-" + instance.value(attMaxAge));
-			}
-		}
-		ages.add("All");
+		
 		this.cmbAge.removeAllItems();
-		for (String age : ages) {
+		for (String age : targets.get("Age")) {
 			this.cmbAge.addItem(age);
 		}
 	}
