@@ -4,6 +4,7 @@
  */
 package adstimator.data;
 
+import adstimator.io.FacebookDataParser;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -56,7 +57,6 @@ public class KnowledgeBase
 	{
 		this.id = id;
 		this.name = name;
-		this.manager = new DatabaseManager(this.table());
 	}
 	
 	public KnowledgeBase(String name)
@@ -77,17 +77,37 @@ public class KnowledgeBase
 		}
 	}
 	
+	private DatabaseManager databaseManager()
+	{
+		if (!this.saved) {
+			throw new RuntimeException("Knowledge base must be saved before connecting to its database.");
+		}
+		if (this.manager == null) {
+			this.manager = new DatabaseManager(this.table());
+		}
+		return this.manager;
+	}
+	
 	public Map<String, List<String>> targets()
 	{
 		Map<String, List<String>> map = new HashMap<String, List<String>>();
-		Ads targets = this.manager.getTargets();
+		List<String> ageList = new LinkedList<String>();
+		ageList.add("All");
+		map.put("Age", ageList);
 		
 		List<String> genders = new LinkedList<String>();
+		genders.add("All");
+		map.put("Gender", genders);
+		
+		Ads targets = this.databaseManager().getTargets();
+		
+		if (targets == null || targets.numAttributes() == 0) {
+			return map;
+		}
+		
 		for (int i = 0; i < targets.attribute("Gender").numValues(); i++) {
 			genders.add(targets.attribute("Gender").value(i));
 		}
-		genders.add("All");
-		map.put("Gender", genders);
 
 		Set<String> ages = new TreeSet<String>();
 		Attribute attMinAge = targets.attribute("Age_Min");
@@ -95,11 +115,14 @@ public class KnowledgeBase
 		for (Instance instance : targets) {
 			ages.add(instance.value(attMinAge) + "-" + instance.value(attMaxAge));
 		}
-		List<String> ageList = new LinkedList<String>(ages);
-		ageList.add("All");
-		map.put("Age", ageList);
+		ageList.addAll(ages);
 		
 		return map;
+	}
+	
+	public void addAds(Ads ads)
+	{
+		this.databaseManager().add(ads);
 	}
 
 	public static List<KnowledgeBase> getAll()

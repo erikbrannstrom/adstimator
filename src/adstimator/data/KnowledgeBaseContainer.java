@@ -5,6 +5,7 @@
 package adstimator.data;
 
 import java.util.Observable;
+import java.util.Observer;
 
 /**
  *
@@ -35,6 +36,12 @@ public class KnowledgeBaseContainer extends Observable
 			return;
 		}
 		this.kb = kb;
+		this.updated();
+	}
+	
+	public void updated()
+	{
+		this.setChanged();
 		this.notifyObservers();
 	}
 	

@@ -4,7 +4,6 @@
  */
 package adstimator.gui.views;
 
-import adstimator.gui.GUI;
 import adstimator.gui.models.AdsTableModel;
 import java.awt.Color;
 import java.awt.Point;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultRowSorter;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
@@ -85,15 +83,12 @@ public class AdsTable extends JTable
 		sorter.setRowFilter(rf);
 	}
 	
-	public List<Map<String, String>> exportSelectedRows(Map<String, String> fixedValues)
+	public List<Map<String, String>> exportSelectedRows()
 	{
 		// Get selected rows
 		int[] selection = this.getSelectedRows();
 		for (int i = 0; i < selection.length; i++) {
 			selection[i] = this.convertRowIndexToModel(selection[i]);
-		}
-		if (selection.length == 0) {
-			return null;
 		}
 		// Create list with a map for each ad
 		List<Map<String, String>> adList = new LinkedList<Map<String, String>>();
@@ -101,7 +96,6 @@ public class AdsTable extends JTable
 			Map<String, String> adMap = new HashMap<String, String>();
 			adMap.put("Body", this.model.getValueAt(row, this.model.findColumn("Body")).toString());
 			adMap.put("Image Hash", this.model.getValueAt(row, this.model.findColumn("Image_Hash")).toString());
-			adMap.putAll(fixedValues);
 
 			adList.add(adMap);
 		}
