@@ -6,9 +6,11 @@ import adstimator.core.Estimator;
 import adstimator.data.Ads;
 import adstimator.data.DatabaseManager;
 import adstimator.data.KnowledgeBase;
+import adstimator.data.KnowledgeBaseContainer;
 import adstimator.gui.models.AdsTableModel;
 import adstimator.gui.views.AdsTable;
 import adstimator.gui.views.FilterPanel;
+import adstimator.gui.views.TargetPanel;
 import adstimator.io.Exporter;
 import adstimator.io.FacebookDataParser;
 import adstimator.utils.Config;
@@ -22,7 +24,6 @@ import weka.core.*;
 
 public class GUI extends JFrame
 {
-
 	private Config config;
 	private KnowledgeBase currentKb;
 	private AdsTableModel tableModel;
@@ -30,11 +31,9 @@ public class GUI extends JFrame
 	private AdFactory adFactory;
 	// GUI components
 	private AdsTable table;
-	private JComboBox cmbGender;
-	private JComboBox cmbAge;
-	private JComboBox cmbFilterType;
-	private JTextField filterText;
+	private TargetPanel targetPanel;
 	private JMenu menuDatabase;
+	private KnowledgeBaseContainer kbContainer;
 
 	public GUI()
 	{
@@ -48,12 +47,10 @@ public class GUI extends JFrame
 		panel.setOpaque(true);
 		this.setContentPane(panel);
 
-		cmbGender = new JComboBox();
-		cmbAge = new JComboBox();
-
 		this.config = new Config();
 
 		this.setCurrentKB(Integer.parseInt(this.config.get("knowledge_base")));
+		this.targetPanel = new TargetPanel(this.kbContainer);
 
 		// Menu bar
 		JMenuBar menuBar = new JMenuBar();
@@ -68,7 +65,7 @@ public class GUI extends JFrame
 				int returnVal = chooser.showOpenDialog(GUI.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					dataManager.add(new Ads(FacebookDataParser.parse(chooser.getSelectedFile())));
-					GUI.this.updateTargetControls();
+					kbContainer.notifyObservers();
 				}
 			}
 		});
@@ -85,16 +82,7 @@ public class GUI extends JFrame
 				// Ask for campaign name
 				String campaignName = JOptionPane.showInputDialog(GUI.this, "What is the name of the campaign?");
 				target.put("Campaign Name", campaignName);
-				String val = (String) cmbGender.getSelectedItem();
-				if (val.equalsIgnoreCase("All")) {
-					val = "";
-				}
-				target.put("Gender", val);
-				val = (String) cmbAge.getSelectedItem();
-				if (!val.equalsIgnoreCase("All")) {
-					target.put("Age Min", val.substring(0, val.indexOf("-")));
-					target.put("Age Max", val.substring(val.indexOf("-") + 1));
-				}
+				target.putAll(targetPanel.currentTarget());
 				
 				List<Map<String, String>> adList = GUI.this.table.exportSelectedRows(target);
 				if (adList == null) {
@@ -136,11 +124,7 @@ public class GUI extends JFrame
 		// Targeting //
 		///////////////
 		JPanel pnlTarget = new JPanel(new MigLayout("ins 5"));
-		pnlTarget.add(new JLabel("Target:"));
-		pnlTarget.add(cmbGender);
-		pnlTarget.add(cmbAge);
-
-		this.updateTargetControls();
+		pnlTarget.add(new TargetPanel(this.kbContainer));
 
 		// Buttons for choosing what the data table should show (suggestions, texts or images)
 		JButton btnSubmit = new JButton("Show suggestions");
@@ -213,42 +197,16 @@ public class GUI extends JFrame
 	}
 
 	/**
-	 * Private method which should be called when a new report has been imported in order to repopulate the targeting
-	 * options.
-	 */
-	private void updateTargetControls()
-	{
-		Map<String, List<String>> targets = this.currentKb.targets();
-		this.cmbGender.removeAllItems();
-		for (String gender : targets.get("Gender")) {
-			this.cmbGender.addItem(gender);
-		}
-		
-		this.cmbAge.removeAllItems();
-		for (String age : targets.get("Age")) {
-			this.cmbAge.addItem(age);
-		}
-	}
-
-	/**
 	 * Private method which should be called whenever the targeting options are changed.
 	 */
 	private void updateWhere()
 	{
 		// Reset where clauses
 		this.dataManager.resetWhere();
-
-		// Set gender, if other than all is selected
-		String val = (String) cmbGender.getSelectedItem();
-		if (!val.equalsIgnoreCase("All")) {
-			this.dataManager.where("Gender", val);
-		}
-
-		// Set ages, if other than all is selected
-		val = (String) cmbAge.getSelectedItem();
-		if (!val.equalsIgnoreCase("All")) {
-			this.dataManager.where("Age_Min", val.substring(0, val.indexOf("-")));
-			this.dataManager.where("Age_Max", val.substring(val.indexOf("-") + 1));
+		Map<String, String> currentTarget = this.targetPanel.currentTarget();
+		
+		for (String key : currentTarget.keySet()) {
+			this.dataManager.where(key, currentTarget.get(key));
 		}
 	}
 
@@ -326,7 +284,11 @@ public class GUI extends JFrame
 		GUI.this.config.set("knowledge_base", String.valueOf(kb.id()));
 		this.currentKb = kb;
 		this.dataManager = new DatabaseManager(kb.table());
-		this.updateTargetControls();
+		if (this.kbContainer == null) {
+			this.kbContainer = new KnowledgeBaseContainer(kb);
+		} else {
+			this.kbContainer.setKnowledgeBase(this.currentKb);
+		}
 	}
 
 	private void setCurrentKB(int id)

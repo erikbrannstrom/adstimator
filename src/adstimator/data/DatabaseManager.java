@@ -73,7 +73,7 @@ public class DatabaseManager implements DataManager
 
 	public void where(String key, String value)
 	{
-		this.where.add(key);
+		this.where.add(key.replaceAll(" ", "_"));
 		this.where.add(value);
 	}
 
