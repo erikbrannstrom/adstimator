@@ -24,21 +24,22 @@ public class GUI extends JFrame implements Observer
 
 	public GUI()
 	{
+		// Initialize JFrame and its settings
 		super("Ad Estimator");
-		
-		// Set correct menubar location on Mac
 		if (System.getProperty("os.name").contains("Mac")) {
 			System.setProperty("apple.laf.useScreenMenuBar", "true");
 		}
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
+		// Create a main content pane with MigLayout
 		JPanel panel = new JPanel(new MigLayout("fill", "", "[]10:10:10[grow]10:10:10[]"));
 		panel.setOpaque(true);
 		this.setContentPane(panel);
 		
+		// Initialize private variables
 		this.tableModel = new AdsTableModel(null, null);
 		this.table = new AdsTable(this.tableModel);
 		this.config = new Config();
-
 		this.kbContainer = new KnowledgeBaseContainer(Integer.parseInt(this.config.get("knowledge_base")));
 		this.targetPanel = new TargetPanel(this.kbContainer);
 		this.kbContainer.addObserver(this);

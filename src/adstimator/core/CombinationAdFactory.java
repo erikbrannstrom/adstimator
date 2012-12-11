@@ -1,29 +1,33 @@
 package adstimator.core;
 
-import adstimator.data.DataManager;
-import adstimator.core.AdFactory;
 import adstimator.data.Ads;
 import java.util.*;
 import weka.core.*;
 import weka.filters.*;
 import weka.filters.unsupervised.attribute.Remove;
 
+/**
+ * Ad factory which creates combinations of all ad properties available in the data set provided through the 
+ * constructor.
+ * 
+ * @author erikbrannstrom
+ */
 public class CombinationAdFactory implements AdFactory
 {
-	private DataManager dataManager;
-	private Instances data, suggestions;
-
-	public CombinationAdFactory(DataManager dataManager)
-	{
-		this.dataManager = dataManager;
-		this.data = this.dataManager.get();
-	}
+	private Ads data;
+	private Instances suggestions;
 
 	public CombinationAdFactory(Instances data)
 	{
-		this.data = data;
+		this.data = new Ads(data);
 	}
 
+	/**
+	 * Return a list of ads whose combination of ad properties does not exist in the provided data.
+	 *
+	 * @return Suggested ads
+	 */
+	@Override
 	public Ads all()
 	{
 		if (this.suggestions == null) {
@@ -44,21 +48,9 @@ public class CombinationAdFactory implements AdFactory
 		Iterator<Instance> it = this.suggestions.iterator();
 		while (it.hasNext()) {
 			Instance suggestion = it.next();
-			for (Instance orig : this.data) {
-				boolean remove = true;
-				for (int i = 0; i < this.data.numAttributes(); i++) {
-					if ( ! Ads.AD.contains(this.data.attribute(i).name().replaceAll("_", " ")) ) {
-						continue;
-					}
-					if (Math.abs(suggestion.value(i) - orig.value(i)) > 0.0001) {
-						remove = false;
-						break;
-					}
-				}
-				if (remove) {
-					it.remove();
-					break;
-				}
+			Instance match = this.data.findMatch(suggestion);
+			if (match != null) {
+				it.remove();
 			}
 		}
 

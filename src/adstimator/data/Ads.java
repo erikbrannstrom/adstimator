@@ -127,7 +127,7 @@ public class Ads extends Instances
 			}
 			return sum/this.numInstances();
 		} else {
-			Attribute attrActions = this.attribute("Actions");
+			Attribute attrActions = this.attribute("Clicks Count");
 			Attribute attrImpressions = this.attribute("Impressions");
 			double actions = 0.0;
 			double impressions = 0.0;

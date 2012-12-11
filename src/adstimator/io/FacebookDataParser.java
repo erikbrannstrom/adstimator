@@ -14,9 +14,9 @@ import weka.filters.unsupervised.attribute.Remove;
  * Parser for reports from Facebook's Power Editor
  * 
  * The Power Editor allows for exporting files to CSV format, however the Weka CSV parser cannot handle these files
- * directly for a number of reasons. Most importantly, the Facebook reports are encoded using UTF16 which is unreadable
- * to Weka. They also use tab-delimitation where as Weka expects comma-delimited columns, and Facebook also drops 
- * empty columns at the end of lines.
+ * directly for a number of reasons. Most importantly, the Facebook reports are encoded using UTF16 (with BOM) which 
+ * is unreadable to Weka. They also use tab-delimitation where as Weka expects comma-delimited columns, and Facebook 
+ * also drops empty columns at the end of lines.
  * 
  * The parser also replaces all double-quotes (") in cells with single-quotes ('), because Weka cannot handle nested
  * quotes and the double-quotes are used when a value is a string.

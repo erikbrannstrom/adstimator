@@ -4,9 +4,8 @@
  */
 package adstimator.gui.controllers;
 
-import adstimator.gui.GUI;
+import adstimator.gui.models.TargetInterface;
 import adstimator.gui.views.AdsTable;
-import adstimator.gui.views.TargetPanel;
 import adstimator.io.Exporter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,20 +24,20 @@ public class ExportActionListener implements ActionListener
 
 	private Exporter exporter;
 	private final AdsTable table;
-	private final TargetPanel targetPanel;
+	private final TargetInterface target;
 
-	public ExportActionListener(Exporter exporter, AdsTable table, TargetPanel targetPanel)
+	public ExportActionListener(Exporter exporter, AdsTable table, TargetInterface target)
 	{
 		this.exporter = exporter;
 		this.table = table;
-		this.targetPanel = targetPanel;
+		this.target = target;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent ae)
 	{
-		List<Map<String, String>> adList = this.table.exportSelectedRows();
-		Map<String, String> additions = this.targetPanel.currentTarget();
+		List<Map<String, String>> adList = this.table.exportSelected();
+		Map<String, String> additions = this.target.currentTarget();
 		String campaignName = JOptionPane.showInputDialog(null, "What is the name of the campaign?");
 		additions.put("Campaign Name", campaignName);
 		

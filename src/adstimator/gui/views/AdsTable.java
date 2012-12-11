@@ -5,6 +5,7 @@
 package adstimator.gui.views;
 
 import adstimator.gui.models.AdsTableModel;
+import adstimator.gui.models.SelectionInterface;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -35,7 +36,7 @@ import javax.swing.table.TableRowSorter;
  *
  * @author erikbrannstrom
  */
-public class AdsTable extends JTable
+public class AdsTable extends JTable implements SelectionInterface
 {
 	private AdsTableModel model;
 	private DefaultRowSorter<AdsTableModel, Integer> sorter;
@@ -83,7 +84,7 @@ public class AdsTable extends JTable
 		sorter.setRowFilter(rf);
 	}
 	
-	public List<Map<String, String>> exportSelectedRows()
+	public List<Map<String, String>> exportSelected()
 	{
 		// Get selected rows
 		int[] selection = this.getSelectedRows();

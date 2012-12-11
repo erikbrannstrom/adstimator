@@ -1,6 +1,7 @@
 package adstimator.gui.views;
 
 import adstimator.data.KnowledgeBaseContainer;
+import adstimator.gui.models.TargetInterface;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ import net.miginfocom.swing.MigLayout;
  *
  * @author erikbrannstrom
  */
-public class TargetPanel extends JPanel implements Observer
+public class TargetPanel extends JPanel implements Observer, TargetInterface
 {
 	private KnowledgeBaseContainer kbc;
 	private JComboBox cmbGender;
