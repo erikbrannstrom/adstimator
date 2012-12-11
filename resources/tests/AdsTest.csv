@@ -1,5 +1,5 @@
 Gender,Age Min,Age Max,Body,Image Hash,Clicks Count,Impressions
 Women,18,23,Text-1,Image-1,5,100
-Women,18,23,Text-2,Image-2,8,100
+Women,24,28,Text-2,Image-2,8,100
 Men,18,23,Text-1,Image-3,9,200
-Men,18,23,Text-1,Image-2,6,150
+Men,24,28,Text-1,Image-2,6,150

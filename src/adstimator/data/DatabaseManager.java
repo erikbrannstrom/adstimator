@@ -64,7 +64,7 @@ public class DatabaseManager implements DataManager
 	public Ads getAggregate(String attribute)
 	{
 		attribute = attribute.replaceAll(" ", "_");
-		return this.get(attribute + ", AVG(Clicks_Count) AS Clicks_Count, AVG(Impressions) AS Impressions", attribute);
+		return this.get(attribute + ", SUM(Clicks_Count) AS Clicks_Count, SUM(Impressions) AS Impressions", attribute);
 	}
 	
 	public Ads getTargets()
@@ -74,6 +74,11 @@ public class DatabaseManager implements DataManager
 
 	public void where(String key, String value)
 	{
+		if (key.equalsIgnoreCase("Age")) {
+			this.where("Age Min", value.substring(0, value.indexOf("-")));
+			this.where("Age Max", value.substring(value.indexOf("-")+1));
+			return;
+		}
 		this.where.add(key.replaceAll(" ", "_"));
 		this.where.add(value);
 	}

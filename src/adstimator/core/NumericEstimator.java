@@ -26,7 +26,7 @@ public class NumericEstimator extends Estimator
 		// Add action rate
 		knowledge.insertAttributeAt(new Attribute("Click Rate"), knowledge.numAttributes());
 		Attribute ar = knowledge.attribute("Click Rate");
-		Attribute actions = knowledge.attribute("Clicks_Count");
+		Attribute actions = knowledge.attribute("Clicks Count");
 		Attribute impressions = knowledge.attribute("Impressions");
 
 		if (actions == null || impressions == null) {

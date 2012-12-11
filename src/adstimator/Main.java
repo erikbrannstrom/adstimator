@@ -9,7 +9,8 @@ import adstimator.gui.GUI;
  */
 public class Main {
 	
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args)
+	{
 		if (Setup.isFirstRun()) {
 			System.out.println("First time application starts. Run initilization.");
 			Setup.init();
