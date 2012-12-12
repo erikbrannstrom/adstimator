@@ -332,5 +332,14 @@ public class KnowledgeBase
 		KnowledgeBase kb = (KnowledgeBase)o;
 		return kb.id() == this.id() && this.name().equals(kb.name());
 	}
+
+	@Override
+	public int hashCode()
+	{
+		int hash = 7;
+		hash = 29 * hash + this.id;
+		hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
+		return hash;
+	}
 	
 }

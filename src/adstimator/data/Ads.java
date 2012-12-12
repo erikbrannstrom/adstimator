@@ -35,11 +35,6 @@ public class Ads extends Instances
 	public Ads(Instances inst)
 	{
 		super(inst);
-		for (Attribute attribute : this.m_Attributes) {
-			if (attribute.name().indexOf("_") > 0) {
-				this.renameAttribute(attribute, attribute.name().replaceAll("_", " "));
-			}
-		}
 
 		// Make sure we have attribute for metrics, otherwise add rate attribute
 		boolean hasMetrics = false;

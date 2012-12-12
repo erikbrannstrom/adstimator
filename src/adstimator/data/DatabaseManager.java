@@ -1,20 +1,35 @@
 package adstimator.data;
 
 import java.util.*;
+import weka.core.Attribute;
 import weka.core.converters.DatabaseLoader;
 import weka.core.converters.DatabaseSaver;
 
+/**
+ * Class for interacting with the database defined in the Weka database property file (DatabaseUtils.props).
+ * 
+ * Implements the DataManager interface, but also adds methods for getting aggregate data and targeting used in the
+ * data set.
+ * 
+ * @author erikbrannstrom
+ */
 public class DatabaseManager implements DataManager
 {
 	private String tableName;
 	private List<String> where;
 
+	/**
+	 * Constructor for initializing a database manager with a given table name.
+	 * 
+	 * @param tableName Name of table
+	 */
 	public DatabaseManager(String tableName)
 	{
 		this.tableName = tableName;
 		this.where = new LinkedList<String>();
 	}
 
+	@Override
 	public void add(Ads ads)
 	{
 		try {
@@ -29,11 +44,19 @@ public class DatabaseManager implements DataManager
 		}
 	}
 	
+	@Override
 	public Ads get()
 	{
 		return this.get("Body, Image_Hash, Clicks_Count, Impressions", "");
 	}
 
+	/**
+	 * Private helper method for generating and executing SELECT queries.
+	 * 
+	 * @param select DB fields to select
+	 * @param groupBy Field to group on
+	 * @return
+	 */
 	private Ads get(String select, String groupBy)
 	{
 		String whereClause = this.createWhereClause();
@@ -43,7 +66,7 @@ public class DatabaseManager implements DataManager
 		} else {
 			groupBy = "";
 		}
-
+		
 		try {
 			DatabaseLoader loader = new DatabaseLoader();
 			loader.connectToDatabase();
@@ -52,26 +75,45 @@ public class DatabaseManager implements DataManager
 				loader.reset();
 				return null;
 			} else {
-				Ads ads = new Ads(loader.getDataSet());
+				Ads data = new Ads(loader.getDataSet());
+				// Database replaces spaces with underscores in names on store, so we need to change that back
+				for (int attrIndex = 0; attrIndex < data.numAttributes(); attrIndex++) {
+					Attribute attribute = data.attribute(attrIndex);
+					if (attribute.name().indexOf("_") > 0) {
+						data.renameAttribute(attribute, attribute.name().replaceAll("_", " "));
+					}
+				}
 				loader.reset();
-				return ads;
+				return data;
 			}
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
 	}
 	
+	/**
+	 * Return the sum of the metrics for a specific attribute (e.g. Body).
+	 *
+	 * @param attribute Name of attribute to aggregate
+	 * @return Aggregated ads
+	 */
 	public Ads getAggregate(String attribute)
 	{
 		attribute = attribute.replaceAll(" ", "_");
 		return this.get(attribute + ", SUM(Clicks_Count) AS Clicks_Count, SUM(Impressions) AS Impressions", attribute);
 	}
 	
+	/**
+	 * Return an instance of Ads that only contains target values for Gender, Age Min and Age Max.
+	 *
+	 * @return Targets in data set
+	 */
 	public Ads getTargets()
 	{
 		return this.get("Gender, Age_Min, Age_Max", "");
 	}
 
+	@Override
 	public void where(String key, String value)
 	{
 		if (key.equalsIgnoreCase("Age")) {
@@ -83,11 +125,17 @@ public class DatabaseManager implements DataManager
 		this.where.add(value);
 	}
 
+	@Override
 	public void resetWhere()
 	{
 		this.where = new LinkedList<String>();
 	}
 	
+	/**
+	 * Private helper method for generating the SQL where clause.
+	 * 
+	 * @return SQL WHERE clause
+	 */
 	private String createWhereClause()
 	{
 		StringBuilder buffer = new StringBuilder();

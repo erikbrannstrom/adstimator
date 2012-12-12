@@ -3,6 +3,13 @@ package adstimator.data;
 import java.util.*;
 import weka.core.*;
 
+/**
+ * Class for splitting data sets in two.
+ * 
+ * The ratio is defined by the user, however the ads that are put in each set are chosen randomly.
+ * 
+ * @author erikbrannstrom
+ */
 public class DataSplitter
 {
 	private Instances original, split, remaining;
@@ -54,6 +61,9 @@ public class DataSplitter
 		return this.split;
 	}
 
+	/**
+	 * Private helper method for doing the actual splitting and storing these in the instance.
+	 */
 	private void performSplit()
 	{
 		this.remaining = new Instances(this.original);
