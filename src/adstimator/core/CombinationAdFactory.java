@@ -36,6 +36,9 @@ public class CombinationAdFactory implements AdFactory
 		return new Ads(this.suggestions);
 	}
 
+	/**
+	 * Private helper method for creating the ads to be suggested.
+	 */
 	private void createSuggestions()
 	{
 		// Create all combinations
@@ -79,18 +82,21 @@ public class CombinationAdFactory implements AdFactory
 
 
 	/*
-	 * Copied from DataGenerator, probably should refactor this.
+	 * Private helper method for recursively creating ad suggestions.
 	 */
 	private void combineInstances(Instance inst, int col)
 	{
 		if (col == this.data.numAttributes()-1) {
+			// If last column, we are done.
 			this.suggestions.add(inst);
 			return;
-		} else if (!Ads.AD.contains(this.data.attribute(col).name().replaceAll("_", " "))) {
+		} else if (!Ads.AD.contains(this.data.attribute(col).name())) {
+			// Ignore properties that are not specifying ad content
 			this.combineInstances(inst, col+1);
 			return;
 		}
 
+		// For each value the current attribute can take, do a recursive call to this method to set the next attribute
 		for (int i = 0; i < this.data.attribute(col).numValues(); i++) {
 			DenseInstance newInst = new DenseInstance(inst);
 			newInst.setDataset(inst.dataset());
