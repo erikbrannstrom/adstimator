@@ -9,6 +9,11 @@ import adstimator.gui.GUI;
  */
 public class Main {
 	
+	/**
+	 * Start application.
+	 * 
+	 * @param args 
+	 */
 	public static void main(String[] args)
 	{
 		if (Setup.isFirstRun()) {
