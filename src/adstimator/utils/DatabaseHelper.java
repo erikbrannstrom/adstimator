@@ -3,24 +3,34 @@ package adstimator.utils;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import weka.experiment.DatabaseUtils;
 
 /**
+ * Singleton for getting and setting connections to a database.
+ * 
+ * The object defaults to using the database specified by Weka in the DatabaseUtils.props file, but it can be
+ * changed by setting a new connection URL (useful for example when testing). This URL is then used to generate new 
+ * Connection objects.
  *
  * @author erikbrannstrom
  */
 public class DatabaseHelper
 {
-
 	private static DatabaseHelper instance;
 	private String connectionURL;
 
+	/**
+	 * Protected constructor, should not be called by other classes.
+	 */
 	protected DatabaseHelper()
 	{
 	}
 
+	/**
+	 * Returns the current connection URL. If no other URL has been set it defaults to the one set by Weka.
+	 * 
+	 * @return Connection URL
+	 */
 	public String getConnectionURL()
 	{
 		if (this.connectionURL == null) {
@@ -34,11 +44,21 @@ public class DatabaseHelper
 		return this.connectionURL;
 	}
 
+	/**
+	 * Set the connection URL. Note that this does not affect connections which have been created previously.
+	 * 
+	 * @param connectionURL New connection URL
+	 */
 	public void setConnectionURL(String connectionURL)
 	{
 		this.connectionURL = connectionURL;
 	}
 	
+	/**
+	 * Initializes and returns a new Connection object with the current connection URL. No username or password is used.
+	 * 
+	 * @return New database connection
+	 */
 	public Connection getConnection()
 	{
 		try {
@@ -48,6 +68,11 @@ public class DatabaseHelper
 		}
 	}
 
+	/**
+	 * Get the singleton instance.
+	 * 
+	 * @return Singleton
+	 */
 	public static DatabaseHelper instance()
 	{
 		if (instance == null) {
