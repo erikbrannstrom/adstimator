@@ -2,17 +2,37 @@ package adstimator.gui.models;
 
 import adstimator.data.Ads;
 
+/**
+ * Model used by the AdsTable.
+ * 
+ * The AdsTableModel can contain two separate sets of data; one with ads whose click rates are estimated and one with 
+ * real click rates. Most logic deals with having these two data sets act as one as seen from the outside of this class.
+ * 
+ * @author erikbrannstrom
+ */
 public class AdsTableModel extends javax.swing.table.AbstractTableModel
 {
 	private Ads estimatedAds, existingAds;
 
-
+	/**
+	 * Create a new table model with the estimated and existing ads. Either, or both, can be null.
+	 * 
+	 * @param estimatedAds Estimated ads, can be null
+	 * @param existingAds Existing ads, can be null
+	 */
 	public AdsTableModel(Ads estimatedAds, Ads existingAds)
 	{
 		this.estimatedAds = estimatedAds;
 		this.existingAds = existingAds;
 	}
 
+	/**
+	 * Change the data contained in this object. After the new data sets have been applied, the method will call any
+	 * table using this model to inform of a potential change in structure.
+	 * 
+	 * @param estimatedAds Estimated ads, can be null
+	 * @param existingAds  Existing ads, can be null
+	 */
 	public void setData(Ads estimatedAds, Ads existingAds)
 	{
 		this.estimatedAds = estimatedAds;
@@ -73,6 +93,12 @@ public class AdsTableModel extends javax.swing.table.AbstractTableModel
 		}
 	}
 
+	/**
+	 * Returns whether or not a row belongs to the set of estimated ads.
+	 * 
+	 * @param row
+	 * @return true if the row is an estimated ad
+	 */
 	public boolean isEstimated(int row)
 	{
 		if (this.estimatedAds == null) {
@@ -82,6 +108,14 @@ public class AdsTableModel extends javax.swing.table.AbstractTableModel
 		}
 	}
 
+	/**
+	 * Private helper for returning a string value for the actual cell values.
+	 * 
+	 * @param ads
+	 * @param row
+	 * @param column
+	 * @return 
+	 */
 	private Object getValueHelper(Ads ads, int row, int column)
 	{
 		if (ads.attribute(column).isNumeric()) {

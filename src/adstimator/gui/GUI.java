@@ -12,9 +12,16 @@ import java.util.*;
 import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
+/**
+ * Main class implementing the GUI for this application.
+ * 
+ * The GUI mostly uses other components, however it is responsible for listening to changes to the knowledge base
+ * and resetting the table when that happens.
+ * 
+ * @author erikbrannstrom
+ */
 public class GUI extends JFrame implements Observer
 {
-
 	private Config config;
 	private AdsTableModel tableModel;
 	private KnowledgeBaseContainer kbContainer;
@@ -85,6 +92,13 @@ public class GUI extends JFrame implements Observer
 		this.pack();
 	}
 
+	/**
+	 * Stores the current knowledge base as the default one in the configuration and clears the table.
+	 * Automatically called when knowledge base instance is changed in the container.
+	 * 
+	 * @param o Object which was changed
+	 * @param o1 Object describing the change
+	 */
 	@Override
 	public final void update(Observable o, Object o1)
 	{

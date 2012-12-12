@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package adstimator.gui.views;
 
 import adstimator.gui.models.AdsTableModel;
@@ -33,6 +29,11 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
 /**
+ * Extension of the Swing JTable component.
+ * 
+ * It requires an AdsTableModel as data model and supports a number of extra features. These include remembering sort
+ * keys for the number of columns for the data, exporting selection, copying cell values and using a different 
+ * background color for estimated ad instances.
  *
  * @author erikbrannstrom
  */
@@ -42,6 +43,11 @@ public class AdsTable extends JTable implements SelectionInterface
 	private DefaultRowSorter<AdsTableModel, Integer> sorter;
 	private Map<Integer, List<? extends RowSorter.SortKey>> sortKeyMap;
 
+	/**
+	 * Create a new table with the specific underlying data model.
+	 * 
+	 * @param model Ad data
+	 */
 	public AdsTable(AdsTableModel model)
 	{
 		super(model);
@@ -52,6 +58,13 @@ public class AdsTable extends JTable implements SelectionInterface
 		this.setRowSorter(this.sorter);
 	}
 
+	/**
+	 * Method which handles the event that the data in the table model has changed. If this change in data causes the
+	 * number of columns to change as well, the sort settings are stored for that number and either the sorting used 
+	 * last for the same number of columns as the new data set is fetched, or a default sorter is generated.
+	 * 
+	 * @param tme 
+	 */
 	@Override
 	public void tableChanged(TableModelEvent tme)
 	{
@@ -62,28 +75,39 @@ public class AdsTable extends JTable implements SelectionInterface
 		}
 		
 		int prevNumColumns = this.getColumnCount();
-		List<? extends RowSorter.SortKey> sorter = this.getRowSorter().getSortKeys();
+		List<? extends RowSorter.SortKey> sortKeys = this.getRowSorter().getSortKeys();
 		super.tableChanged(tme);
 		int currentNumColumns = this.getColumnCount();
 		// If number of columns have changed we should switch sorter
 		// Else we assume the same sorter should be used
 		if (prevNumColumns != currentNumColumns) {
-			this.sortKeyMap.put(prevNumColumns, sorter);
+			this.sortKeyMap.put(prevNumColumns, sortKeys);
 			if (this.sortKeyMap.containsKey(currentNumColumns)) {
-				sorter = this.sortKeyMap.get(currentNumColumns);
+				sortKeys = this.sortKeyMap.get(currentNumColumns);
 			} else {
-				sorter = Arrays.asList(new RowSorter.SortKey(this.model.getColumnCount() - 1, SortOrder.DESCENDING));
+				sortKeys = Arrays.asList(new RowSorter.SortKey(this.model.getColumnCount() - 1, SortOrder.DESCENDING));
 			}
 			
 		}
-		this.getRowSorter().setSortKeys(sorter);
+		this.getRowSorter().setSortKeys(sortKeys);
 	}
 
+	/**
+	 * Set the filter to use on the table.
+	 * 
+	 * @param rf Filter
+	 */
 	public void setRowFilter(RowFilter<? super AdsTableModel, ? super Integer> rf)
 	{
 		sorter.setRowFilter(rf);
 	}
 	
+	/**
+	 * Return a list as long as the number of rows selected, with each map representing one of those rows.
+	 * 
+	 * @return Key-value description of selected rows
+	 */
+	@Override
 	public List<Map<String, String>> exportSelected()
 	{
 		// Get selected rows
@@ -103,6 +127,14 @@ public class AdsTable extends JTable implements SelectionInterface
 		return adList;
 	}
 
+	/**
+	 * Return the default cell renderer. If however an instance whose click rate has been estimated is to be shown,
+	 * the background color is changed.
+	 * 
+	 * @param row
+	 * @param column
+	 * @return 
+	 */
 	@Override
 	public TableCellRenderer getCellRenderer(int row, int column)
 	{
@@ -116,6 +148,11 @@ public class AdsTable extends JTable implements SelectionInterface
 		return cr;
 	}
 
+	/**
+	 * Private helper method for creating and setting a mouse listener on the table. It listens for right clicks
+	 * and shows the user an option to copy the value in that cell. If clicked the value will be put in the system
+	 * clipboard.
+	 */
 	private void initContextMenu()
 	{
 		this.addMouseListener(new MouseAdapter()

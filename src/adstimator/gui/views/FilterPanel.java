@@ -14,6 +14,10 @@ import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 
 /**
+ * Extension of the Swing JPanel which is used to create filters for an AdsTable.
+ * 
+ * The panel contains a combobox for selecting the type of ads to be shown (All, Existing or Suggestions) and a text
+ * field for free text, case-insensitive filtering.
  *
  * @author erikbrannstrom
  */
@@ -23,6 +27,12 @@ public class FilterPanel extends JPanel
 	private JComboBox cmbFilterType;
 	private JTextField filterText;
 
+	/**
+	 * Create a new filter panel and connect it to a table which will be automatically updated when these controls
+	 * change.
+	 * 
+	 * @param table Table to be filtered
+	 */
 	public FilterPanel(AdsTable table)
 	{
 		super(new MigLayout("fillx, ins 5"));
@@ -30,6 +40,9 @@ public class FilterPanel extends JPanel
 		this.init();
 	}
 
+	/**
+	 * Add all components and register listeners.
+	 */
 	private void init()
 	{
 		this.add(new JLabel("Filters:"), "gap 0 5, align left");

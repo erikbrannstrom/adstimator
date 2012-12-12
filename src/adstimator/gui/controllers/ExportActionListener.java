@@ -1,11 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package adstimator.gui.controllers;
 
+import adstimator.gui.models.SelectionInterface;
 import adstimator.gui.models.TargetInterface;
-import adstimator.gui.views.AdsTable;
 import adstimator.io.Exporter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,6 +12,11 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
+ * This action is used when exporting a selection. The action will ask for a campaign name but otherwise rely on the
+ * data from the target and selection interfaces to know what to export. The target data will be repeated for each
+ * exported row, where as the selection has its own key-value map for each row.
+ * 
+ * The file to which the export is written is chosen by the user in a file dialog.
  *
  * @author erikbrannstrom
  */
@@ -23,20 +24,27 @@ public class ExportActionListener implements ActionListener
 {
 
 	private Exporter exporter;
-	private final AdsTable table;
+	private final SelectionInterface selection;
 	private final TargetInterface target;
 
-	public ExportActionListener(Exporter exporter, AdsTable table, TargetInterface target)
+	/**
+	 * Initialize a new listener with an exporter as well as a selection and a target interface.
+	 * 
+	 * @param exporter
+	 * @param table
+	 * @param target 
+	 */
+	public ExportActionListener(Exporter exporter, SelectionInterface table, TargetInterface target)
 	{
 		this.exporter = exporter;
-		this.table = table;
+		this.selection = table;
 		this.target = target;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent ae)
 	{
-		List<Map<String, String>> adList = this.table.exportSelected();
+		List<Map<String, String>> adList = this.selection.exportSelected();
 		Map<String, String> additions = this.target.currentTarget();
 		String campaignName = JOptionPane.showInputDialog(null, "What is the name of the campaign?");
 		additions.put("Campaign Name", campaignName);

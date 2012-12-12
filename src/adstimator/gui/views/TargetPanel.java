@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
 
 /**
+ * An extension of the Swing JPanel which allows the user to update targeting controls.
  *
  * @author erikbrannstrom
  */
@@ -22,6 +23,12 @@ public class TargetPanel extends JPanel implements Observer, TargetInterface
 	private JComboBox cmbGender;
 	private JComboBox cmbAge;
 
+	/**
+	 * Initialize a new targeting panel with a knowledge base container. The panel will automatically add itself as an
+	 * observer on the container.
+	 * 
+	 * @param kbc 
+	 */
 	public TargetPanel(KnowledgeBaseContainer kbc)
 	{
 		super(new MigLayout("ins 5"));
@@ -30,6 +37,7 @@ public class TargetPanel extends JPanel implements Observer, TargetInterface
 		this.kbc.addObserver(this);
 	}
 	
+	@Override
 	public Map<String, String> currentTarget()
 	{
 		Map<String, String> currentTarget = new HashMap<String, String>();
@@ -48,6 +56,9 @@ public class TargetPanel extends JPanel implements Observer, TargetInterface
 		return currentTarget;
 	}
 	
+	/**
+	 * Private helper method for initializing and adding controls to the panel.
+	 */
 	private void init()
 	{
 		this.cmbGender = new JComboBox();
@@ -76,6 +87,13 @@ public class TargetPanel extends JPanel implements Observer, TargetInterface
 		}
 	}
 
+	/**
+	 * Updates the targeting controls so that they match the ones in the current knowledge base. Called automatically
+	 * when the knowledge base in the container is changed.
+	 * 
+	 * @param o
+	 * @param o1 
+	 */
 	@Override
 	public void update(Observable o, Object o1)
 	{

@@ -21,6 +21,15 @@ import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
+ * Extension of the Swing JMenuBar. It contains actions for exporting selected table rows, importing reports from
+ * Facebook and creating/deleting/switching knowledge bases. The last two have their logic contained in this class.
+ * 
+ * The import function uses the FacebookDataParser class to parse a report chosen by the user and hands that data on to
+ * the knowledge base.
+ * 
+ * The knowledge base menu is updated any time the current knowledge base is changed, a new one is created or an 
+ * existing one is deleted. It contains some logic, but most of the heavy lifting is delegated to the KnowledgeBase
+ * class.
  *
  * @author erikbrannstrom
  */
@@ -31,6 +40,12 @@ public class Menu extends JMenuBar
 	private KnowledgeBaseContainer kbContainer;
 	private JMenu menuDatabase;
 
+	/**
+	 * Initialize a new menu with an export action instance and the container for the knowledge base.
+	 * 
+	 * @param exportAction
+	 * @param kbContainer 
+	 */
 	public Menu(ExportActionListener exportAction, KnowledgeBaseContainer kbContainer)
 	{
 		this.exportAction = exportAction;
@@ -38,10 +53,13 @@ public class Menu extends JMenuBar
 		this.init();
 	}
 
+	/**
+	 * Initialize and add all menus and actions.
+	 */
 	private void init()
 	{
 		JMenu menuFile = new JMenu("File");
-		JMenuItem menuItmReport = new JMenuItem("Import report");
+		JMenuItem menuItmReport = new JMenuItem("Import Facebook CSV");
 		menuItmReport.addActionListener(new ActionListener()
 		{
 			@Override
@@ -84,10 +102,15 @@ public class Menu extends JMenuBar
 		this.add(menuDatabase);
 	}
 
+	/**
+	 * Private method for updating the knowledge base menu.
+	 */
 	private void updateKBMenu()
 	{
+		// Empty menu
 		this.menuDatabase.removeAll();
 
+		// Add create action
 		JMenuItem menuItmNew = new JMenuItem("New KB");
 		menuItmNew.addActionListener(new ActionListener()
 		{
@@ -105,6 +128,7 @@ public class Menu extends JMenuBar
 		});
 		this.menuDatabase.add(menuItmNew);
 
+		// Add delete action
 		JMenuItem menuItmDelete = new JMenuItem("Delete current KB");
 		menuItmDelete.addActionListener(new ActionListener()
 		{
@@ -131,6 +155,7 @@ public class Menu extends JMenuBar
 
 		this.menuDatabase.addSeparator();
 
+		// Add all KBs to the menu, mark the current one as selected and register an action for clicks.
 		ButtonGroup group = new ButtonGroup();
 		for (final KnowledgeBase kb : KnowledgeBase.getAll()) {
 			JRadioButtonMenuItem itm = new JRadioButtonMenuItem(kb.name(), kb.id() == this.kbContainer.getKnowledgeBase().id());
