@@ -131,6 +131,11 @@ public class StrategyEvaluator
 		return results;
 	}
 	
+	/**
+	 * Private helper method for sorting instances by click rate.
+	 * 
+	 * @param instances Instances to be sorted. Order will obviously be modified.
+	 */
 	private void sort(Instances instances)
 	{
 		Comparator<Instance> rateComparator = new Comparator<Instance>() {
@@ -151,6 +156,12 @@ public class StrategyEvaluator
 		Collections.sort(instances, rateComparator);
 	}
 	
+	/**
+	 * Main method.
+	 * 
+	 * @param args First argument must be data file to run evaluation on.
+	 * @throws Exception 
+	 */
 	public static void main(String[] args) throws Exception {
 		DataSource source = new DataSource(args[0]);
 		Ads data = new Ads(source.getDataSet());

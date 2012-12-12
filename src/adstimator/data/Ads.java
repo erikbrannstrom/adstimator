@@ -96,10 +96,7 @@ public class Ads extends Instances
 		// Add action rate
 		this.insertAttributeAt(new Attribute("Click Rate"), this.numAttributes());
 		Attribute ar = this.attribute("Click Rate");
-		Attribute actions = this.attribute("Clicks_Count");
-		if (actions == null) {
-			actions = this.attribute("Clicks Count");
-		}
+		Attribute actions = this.attribute("Clicks Count");
 		Attribute impressions = this.attribute("Impressions");
 
 		if (actions == null || impressions == null) {
