@@ -18,7 +18,7 @@ public class NumericEstimator extends Estimator
 	 */
 	protected void knowledge(Instances knowledge)
 	{
-		if (knowledge.attribute("ActionRate") != null) {
+		if (knowledge.attribute("Click Rate") != null) {
 			this.knowledge = knowledge;
 			return;
 		}

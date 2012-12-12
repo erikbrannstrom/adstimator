@@ -19,12 +19,12 @@ public class NominalEstimator extends Estimator
 	 */
 	protected void knowledge(Instances knowledge)
 	{
-		if (knowledge.attribute("Click Rate") != null) {
+		if (knowledge.attribute("Action") != null) {
 			this.knowledge = knowledge;
 			return;
 		}
 
-		Attribute actions = knowledge.attribute("Clicks_Count");
+		Attribute actions = knowledge.attribute("Clicks Count");
 		Attribute impressions = knowledge.attribute("Impressions");
 
 		if (actions == null || impressions == null) {
