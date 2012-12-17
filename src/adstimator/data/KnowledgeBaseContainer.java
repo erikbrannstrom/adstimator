@@ -5,7 +5,7 @@ import java.util.Observable;
 /**
  * A container for a KnowledgeBase.
  * 
- * The container is Observable and thus other objects may register themselves as listners. By doing so they will be
+ * The container is Observable and thus other objects may register themselves as listeners. By doing so they will be
  * notified when someone replaces the knowledge base with a new instance.
  *
  * @author erikbrannstrom
