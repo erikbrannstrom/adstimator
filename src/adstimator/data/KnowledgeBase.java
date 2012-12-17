@@ -1,6 +1,5 @@
 package adstimator.data;
 
-import adstimator.utils.DatabaseHelper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

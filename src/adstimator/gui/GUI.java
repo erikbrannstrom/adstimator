@@ -6,7 +6,7 @@ import adstimator.gui.controllers.ExportActionListener;
 import adstimator.gui.models.AdsTableModel;
 import adstimator.gui.views.*;
 import adstimator.io.Exporter;
-import adstimator.utils.Config;
+import adstimator.data.Config;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;

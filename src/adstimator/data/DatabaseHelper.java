@@ -1,4 +1,4 @@
-package adstimator.utils;
+package adstimator.data;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

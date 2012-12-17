@@ -1,7 +1,6 @@
 package adstimator.data;
 
 import adstimator.Setup;
-import adstimator.utils.DatabaseHelper;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
