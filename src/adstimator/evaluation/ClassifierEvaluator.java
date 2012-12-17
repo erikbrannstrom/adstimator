@@ -2,7 +2,7 @@ package adstimator.evaluation;
 
 import adstimator.core.Estimator;
 import adstimator.data.Ads;
-import adstimator.data.DataSplitter;
+import adstimator.evaluation.util.DataSplitter;
 import java.util.*;
 import weka.core.*;
 import weka.core.converters.ConverterUtils;

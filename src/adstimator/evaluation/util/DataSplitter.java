@@ -1,4 +1,4 @@
-package adstimator.data;
+package adstimator.evaluation.util;
 
 import java.util.*;
 import weka.core.*;
