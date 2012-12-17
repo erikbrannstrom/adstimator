@@ -26,7 +26,7 @@ public class KnowledgeBase
 	private boolean exists, saved;
 	private int id;
 	private String name;
-	private DatabaseManager manager;
+	private AdDatabaseStorage manager;
 	
 	/**
 	 * Get ID of this knowledge base. If it has not been saved, the ID is zero.
@@ -120,13 +120,13 @@ public class KnowledgeBase
 	 * 
 	 * @return Database access manager
 	 */
-	private DatabaseManager databaseManager()
+	private AdDatabaseStorage databaseManager()
 	{
 		if (!this.saved) {
 			throw new RuntimeException("Knowledge base must be saved before connecting to its database.");
 		}
 		if (this.manager == null) {
-			this.manager = new DatabaseManager(this.table());
+			this.manager = new AdDatabaseStorage(this.table());
 		}
 		return this.manager;
 	}

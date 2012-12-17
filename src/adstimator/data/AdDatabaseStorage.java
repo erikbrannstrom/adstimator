@@ -8,12 +8,12 @@ import weka.core.converters.DatabaseSaver;
 /**
  * Class for interacting with the database defined in the Weka database property file (DatabaseUtils.props).
  * 
- * Implements the DataManager interface, but also adds methods for getting aggregate data and targeting used in the
+ * Implements the AdStorage interface, but also adds methods for getting aggregate data and targeting used in the
  * data set.
  * 
  * @author erikbrannstrom
  */
-public class DatabaseManager implements DataManager
+public class AdDatabaseStorage implements AdStorage
 {
 	private String tableName;
 	private List<String> where;
@@ -23,7 +23,7 @@ public class DatabaseManager implements DataManager
 	 * 
 	 * @param tableName Name of table
 	 */
-	public DatabaseManager(String tableName)
+	public AdDatabaseStorage(String tableName)
 	{
 		this.tableName = tableName;
 		this.where = new LinkedList<String>();

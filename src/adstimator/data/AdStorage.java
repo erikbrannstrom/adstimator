@@ -5,7 +5,7 @@ package adstimator.data;
  * 
  * @author erikbrannstrom
  */
-public interface DataManager
+public interface AdStorage
 {
 	/**
 	 * Append the specified ads to persistent storage.
