@@ -65,4 +65,13 @@ Under weka/props is the DatabaseUtils.props file. This is where the database to 
 
 Finally, the resources directory contain a folder for files used when running the test suite for the system.
 
+\section{Deploying on Mac}
+The application can be executed from its JAR form, but to give it a more native feel we can bundle the application into a Mac application.
+
+Xcode comes with an application called the Jar Bundler, which can be used for exactly this purpose. Launch the Jar Bundler and on the first tab, select the main class as the AdEstimator.jar file. Here you can also set the icon to be used. Next step is on the Classpath and Files tab, where you need to add all libraries to the application. Finally, on the Properties tab, add \textit{-Dfile.encoding=UTF8} to the VM Options field in order for the application to correctly handle Unicode characters and check the box next to \textit{Set Working Directory to Inside Application Package}.
+
+Now press Create Application and select a name and location to store it. We still need to modify the contents of this application in order to add the required resources. Simply right-click the app and choose Show Package Contents. Go into Contents - Resources - Java and paste a copy of the DatabaseUtils.prop file in this folder. Also create a folder named \textit{resources} and add the \textit{export-template.csv} file to it.
+
+The app is now ready to be deployed.
+
 \end{document}
