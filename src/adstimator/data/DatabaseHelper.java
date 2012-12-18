@@ -24,6 +24,11 @@ public class DatabaseHelper
 	 */
 	protected DatabaseHelper()
 	{
+		try {
+			Class.forName("org.sqlite.JDBC");
+		} catch (ClassNotFoundException ex) {
+			System.err.print("Could not load JDBC driver.");
+		}
 	}
 
 	/**
@@ -64,7 +69,7 @@ public class DatabaseHelper
 		try {
 			return DriverManager.getConnection(this.getConnectionURL(), null, null);
 		} catch (SQLException ex) {
-			return null;
+			throw new RuntimeException(ex);
 		}
 	}
 
