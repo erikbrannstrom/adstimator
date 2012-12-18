@@ -34,6 +34,7 @@ public class AdDatabaseStorage implements AdStorage
 	{
 		try {
 			DatabaseSaver save = new DatabaseSaver();
+			save.setUrl(DatabaseHelper.instance().getConnectionURL());
 			save.setInstances(ads);
 			save.setRelationForTableName(false);
 			save.setTableName(this.tableName);
@@ -69,6 +70,7 @@ public class AdDatabaseStorage implements AdStorage
 		
 		try {
 			DatabaseLoader loader = new DatabaseLoader();
+			loader.setUrl(DatabaseHelper.instance().getConnectionURL());
 			loader.connectToDatabase();
 			loader.setQuery(String.format("SELECT %s FROM %s %s %s", select, this.tableName, whereClause, groupBy));
 			if (loader.getDataSet() == null) {

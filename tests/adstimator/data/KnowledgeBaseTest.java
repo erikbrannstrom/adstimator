@@ -1,6 +1,7 @@
 package adstimator.data;
 
 import adstimator.Setup;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -11,10 +12,10 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ConverterUtils;
@@ -43,6 +44,10 @@ public class KnowledgeBaseTest
 	@AfterClass
 	public static void tearDownClass()
 	{
+		File db = new File("resources/tests/test.db");
+		if (db.exists()) {
+			db.delete();
+		}
 	}
 	
 	@Before

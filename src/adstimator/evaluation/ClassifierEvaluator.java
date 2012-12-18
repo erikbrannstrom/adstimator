@@ -155,7 +155,7 @@ public class ClassifierEvaluator extends Evaluator
 	/**
 	 * Run evaluator with specified data.
 	 * 
-	 * @param args Requires the first (and only) parameter to be the data file to be used
+	 * @param args Requires the first (and only) parameter to be the data file (ARFF/CSV) to be used
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception

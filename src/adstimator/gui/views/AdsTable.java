@@ -120,7 +120,7 @@ public class AdsTable extends JTable implements SelectionInterface
 		for (int row : selection) {
 			Map<String, String> adMap = new HashMap<String, String>();
 			adMap.put("Body", this.model.getValueAt(row, this.model.findColumn("Body")).toString());
-			adMap.put("Image Hash", this.model.getValueAt(row, this.model.findColumn("Image_Hash")).toString());
+			adMap.put("Image Hash", this.model.getValueAt(row, this.model.findColumn("Image Hash")).toString());
 
 			adList.add(adMap);
 		}
